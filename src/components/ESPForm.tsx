@@ -111,70 +111,73 @@ export default function ESPForm() {
         )}
       </div>
 
-      {/* E - Effort */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/20 text-sm font-bold text-amber-400">
-            E
-          </span>
-          <label className="text-sm font-semibold text-amber-400">
-            Усилие (Effort)
-          </label>
+      {/* E, S, P fields — stacked on mobile, columns on desktop */}
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {/* E - Effort */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/20 text-sm font-bold text-amber-400">
+              E
+            </span>
+            <label className="text-sm font-semibold text-amber-400">
+              Усилие (Effort)
+            </label>
+          </div>
+          <p className="mb-3 text-xs text-slate-500">{prompts.effort}</p>
+          <textarea
+            value={effort}
+            onChange={(e) => setEffort(e.target.value)}
+            placeholder={placeholders.effort}
+            className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            rows={3}
+            maxLength={1000}
+            required
+          />
         </div>
-        <p className="mb-3 text-xs text-slate-500">{prompts.effort}</p>
-        <textarea
-          value={effort}
-          onChange={(e) => setEffort(e.target.value)}
-          placeholder={placeholders.effort}
-          className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-          rows={3}
-          maxLength={1000}
-          required
-        />
-      </div>
 
-      {/* S - Success */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
-            S
-          </span>
-          <label className="text-sm font-semibold text-emerald-400">
-            Успех (Success)
-          </label>
+        {/* S - Success */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
+              S
+            </span>
+            <label className="text-sm font-semibold text-emerald-400">
+              Успех (Success)
+            </label>
+          </div>
+          <p className="mb-3 text-xs text-slate-500">{prompts.success}</p>
+          <textarea
+            value={success}
+            onChange={(e) => setSuccess(e.target.value)}
+            placeholder={placeholders.success}
+            className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            rows={3}
+            maxLength={1000}
+            required
+          />
         </div>
-        <p className="mb-3 text-xs text-slate-500">{prompts.success}</p>
-        <textarea
-          value={success}
-          onChange={(e) => setSuccess(e.target.value)}
-          placeholder={placeholders.success}
-          className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          rows={3}
-          maxLength={1000}
-          required
-        />
-      </div>
 
-      {/* P - Progress */}
-      <div className="glass-card rounded-2xl p-5">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-400">
-            P
-          </span>
-          <label className="text-sm font-semibold text-sky-400">
-            Прогресс (Progress)
-          </label>
+        {/* P - Progress */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-400">
+              P
+            </span>
+            <label className="text-sm font-semibold text-sky-400">
+              Прогресс (Progress)
+            </label>
+          </div>
+          <p className="mb-3 text-xs text-slate-500">{prompts.progress}</p>
+          <textarea
+            value={progress}
+            onChange={(e) => setProgress(e.target.value)}
+            placeholder={placeholders.progress}
+            className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            rows={3}
+            maxLength={1000}
+            required
+          />
         </div>
-        <p className="mb-3 text-xs text-slate-500">{prompts.progress}</p>
-        <textarea
-          value={progress}
-          onChange={(e) => setProgress(e.target.value)}
-          placeholder={placeholders.progress}
-          className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-          rows={3}
-          maxLength={1000}
-          required
-        />
       </div>
 
       {/* Submit */}

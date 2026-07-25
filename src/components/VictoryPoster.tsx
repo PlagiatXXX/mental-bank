@@ -187,19 +187,19 @@ export default function VictoryPoster() {
 
       {/* Victory list */}
       {victories.length > 0 && (
-        <div className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {victories.map((victory, index) => (
             <div
               key={victory.id}
               className="glass-card group relative overflow-hidden rounded-2xl p-5 transition-all hover:border-amber-500/30"
             >
               {/* Position badge */}
-              <div className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-400">
+              <div className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-400">
                 {index + 1}
               </div>
 
-              {/* Edit/delete buttons */}
-              <div className="absolute right-3 top-14 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Edit/delete buttons — always visible on mobile, on hover on desktop */}
+              <div className="absolute right-3 top-3 flex gap-1 opacity-60 transition-opacity group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100">
                 <button
                   onClick={() => openEditForm(victory)}
                   className="rounded-lg bg-slate-700/80 p-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-600 hover:text-slate-200"
@@ -217,7 +217,7 @@ export default function VictoryPoster() {
               </div>
 
               {/* Content */}
-              <div className="pr-12">
+              <div className="pl-10 pr-10 md:pr-12">
                 <h3 className="text-lg font-semibold text-slate-100">
                   {victory.title}
                 </h3>

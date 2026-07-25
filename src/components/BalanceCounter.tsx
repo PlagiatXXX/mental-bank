@@ -61,7 +61,7 @@ export default function BalanceCounter() {
   }
 
   return (
-    <div className="glass-card rounded-2xl p-8 text-center count-up">
+    <div className="glass-card mx-auto max-w-xl rounded-2xl p-8 text-center count-up">
       {/* Gold coin icon */}
       <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full coin-glow bg-gradient-to-br from-amber-400 to-amber-600">
         <span className="text-4xl">🪙</span>

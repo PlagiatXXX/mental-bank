@@ -33,24 +33,24 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <div className="mx-auto min-h-screen max-w-lg px-4 pb-24 pt-6">
+        <Navigation />
+
+        <div className="mx-auto min-h-screen max-w-lg px-4 pb-24 pt-6 transition-all lg:mx-0 lg:ml-24 lg:max-w-none lg:pb-6 lg:px-10 xl:px-16">
           {/* Header */}
-          <header className="mb-6 text-center">
-            <div className="mb-1 flex items-center justify-center gap-2">
+          <header className="mb-6 text-center lg:text-left">
+            <div className="mb-1 flex items-center justify-center gap-2 lg:justify-start">
               <span className="text-2xl">🪙</span>
               <h1 className="text-2xl font-bold tracking-tight text-slate-100">
                 Ментальный банк
               </h1>
             </div>
             <p className="text-xs text-slate-500">
-              Только депозиты. Никаких списаний.
+              Только депозиты. Никаких спис��ний.
             </p>
           </header>
 
           <main>{children}</main>
         </div>
-
-        <Navigation />
       </body>
     </html>
   );
