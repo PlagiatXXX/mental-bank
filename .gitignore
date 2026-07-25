@@ -46,7 +46,9 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# AI agent configs
+# uploads (keep .gitkeep)
+/public/uploads/*
+!/public/uploads/.gitkeep
 .claude/
 .windsurf/
 .agents/

@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description } = body;
+    const { title, description, imageUrl } = body;
 
     if (!title || typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json(
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       data: {
         title: title.trim(),
         description: description?.trim() || null,
+        imageUrl: imageUrl?.trim() || null,
         position: count + 1,
       },
     });
@@ -57,11 +58,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/victories — обновить победу
+// PATCH /api/victories — обновить победу (или переупорядочить)
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, description } = body;
+    const { id, title, description, imageUrl, position } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -70,10 +71,63 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const data: Record<string, string> = {};
+    // Режим переупорядочивания: передан position
+    if (position !== undefined) {
+      const victory = await prisma.victory.findUnique({ where: { id } });
+      if (!victory) {
+        return NextResponse.json(
+          { error: "Победа не найдена" },
+          { status: 404 }
+        );
+      }
+
+      const oldPos = victory.position;
+      const newPos = Math.max(1, Math.min(10, position));
+
+      if (oldPos === newPos) {
+        return NextResponse.json(victory);
+      }
+
+      // Сдвигаем остальные победы
+      await prisma.$transaction(async (tx) => {
+        if (newPos > oldPos) {
+          // Двигаем вниз: сдвигаем те, что между old и new, вверх
+          await tx.victory.updateMany({
+            where: {
+              position: { gt: oldPos, lte: newPos },
+              id: { not: id },
+            },
+            data: { position: { decrement: 1 } },
+          });
+        } else {
+          // Двигаем вверх: сдвигаем те, что между new и old, вниз
+          await tx.victory.updateMany({
+            where: {
+              position: { gte: newPos, lt: oldPos },
+              id: { not: id },
+            },
+            data: { position: { increment: 1 } },
+          });
+        }
+
+        await tx.victory.update({
+          where: { id },
+          data: { position: newPos },
+        });
+      });
+
+      const updated = await prisma.victory.findMany({
+        orderBy: { position: "asc" },
+      });
+      return NextResponse.json(updated);
+    }
+
+    // Обычное обновление полей
+    const data: Record<string, string | null> = {};
     if (title && typeof title === "string") data.title = title.trim();
     if (description !== undefined)
-      data.description = description?.trim() || "";
+      data.description = description?.trim() || null;
+    if (imageUrl !== undefined) data.imageUrl = imageUrl?.trim() || null;
 
     const victory = await prisma.victory.update({
       where: { id },

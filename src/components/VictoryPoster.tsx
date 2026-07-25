@@ -1,28 +1,47 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import Image from "next/image";
 
 interface Victory {
   id: string;
   title: string;
   description: string | null;
+  imageUrl: string | null;
   position: number;
 }
+
+interface FormState {
+  id?: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  imageFile: File | null;
+  imagePreview: string | null;
+}
+
+const emptyForm = (): FormState => ({
+  title: "",
+  description: "",
+  imageUrl: null,
+  imageFile: null,
+  imagePreview: null,
+});
 
 export default function VictoryPoster() {
   const [victories, setVictories] = useState<Victory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formTitle, setFormTitle] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+  const [form, setForm] = useState<FormState>(emptyForm());
+  const [isSaving, setIsSaving] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchVictories = useCallback(async () => {
     try {
       const res = await fetch("/api/victories");
       if (res.ok) {
-        const data = await res.json();
-        setVictories(data);
+        setVictories(await res.json());
       }
     } catch {
       // silently fail
@@ -36,29 +55,72 @@ export default function VictoryPoster() {
   }, [fetchVictories]);
 
   const openAddForm = () => {
-    setEditingId(null);
-    setFormTitle("");
-    setFormDescription("");
+    setForm(emptyForm());
     setShowForm(true);
   };
 
   const openEditForm = (v: Victory) => {
-    setEditingId(v.id);
-    setFormTitle(v.title);
-    setFormDescription(v.description ?? "");
+    setForm({
+      id: v.id,
+      title: v.title,
+      description: v.description ?? "",
+      imageUrl: v.imageUrl,
+      imageFile: null,
+      imagePreview: null,
+    });
     setShowForm(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setForm((prev) => ({
+      ...prev,
+      imageFile: file,
+      imagePreview: URL.createObjectURL(file),
+    }));
+  };
+
+  const removeImage = () => {
+    setForm((prev) => ({
+      ...prev,
+      imageUrl: null,
+      imageFile: null,
+      imagePreview: null,
+    }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formTitle.trim()) return;
-
-    const method = editingId ? "PATCH" : "POST";
-    const body = editingId
-      ? { id: editingId, title: formTitle.trim(), description: formDescription.trim() }
-      : { title: formTitle.trim(), description: formDescription.trim() };
+    if (!form.title.trim()) return;
+    setIsSaving(true);
 
     try {
+      let imageUrl = form.imageUrl;
+
+      // Загружаем файл если выбран
+      if (form.imageFile) {
+        const uploadData = new FormData();
+        uploadData.append("file", form.imageFile);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadData,
+        });
+        if (uploadRes.ok) {
+          const { url } = await uploadRes.json();
+          imageUrl = url;
+        }
+      }
+
+      const method = form.id ? "PATCH" : "POST";
+      const body: Record<string, unknown> = {
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        imageUrl,
+      };
+      if (form.id) body.id = form.id;
+
       const res = await fetch("/api/victories", {
         method,
         headers: { "Content-Type": "application/json" },
@@ -67,13 +129,13 @@ export default function VictoryPoster() {
 
       if (res.ok) {
         setShowForm(false);
-        setEditingId(null);
-        setFormTitle("");
-        setFormDescription("");
+        setForm(emptyForm());
         await fetchVictories();
       }
     } catch {
       // silently fail
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -88,6 +150,49 @@ export default function VictoryPoster() {
     }
   };
 
+  // Drag-n-drop handlers
+  const handleDragStart = (id: string) => setDragId(id);
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (dragId && dragId !== id) {
+      setDragId(id); // visual cue
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === targetId) {
+      setDragId(null);
+      return;
+    }
+
+    const dragged = victories.find((v) => v.id === dragId);
+    const target = victories.find((v) => v.id === targetId);
+    if (!dragged || !target) {
+      setDragId(null);
+      return;
+    }
+
+    // Optimistic update
+    const reordered = [...victories];
+    const fromIdx = reordered.indexOf(dragged);
+    const toIdx = reordered.indexOf(target);
+    reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, dragged);
+    setVictories(reordered);
+    setDragId(null);
+
+    // Сохраняем на сервере
+    await fetch("/api/victories", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: dragged.id, position: target.position }),
+    });
+
+    await fetchVictories();
+  };
+
   if (isLoading) {
     return (
       <div className="glass-card rounded-2xl p-8 text-center">
@@ -97,7 +202,7 @@ export default function VictoryPoster() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-100">
@@ -133,73 +238,157 @@ export default function VictoryPoster() {
         </div>
       )}
 
-      {/* Add/Edit form */}
+      {/* Add/Edit form modal */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-6 space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-400">
-              Название победы
-            </label>
-            <input
-              type="text"
-              value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
-              placeholder="Например: Запустил свой первый проект"
-              className="w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-              maxLength={200}
-              required
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-400">
-              Описание (необязательно)
-            </label>
-            <textarea
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
-              placeholder="Что сделало эту победу особенной?"
-              className="w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-              rows={3}
-              maxLength={500}
-            />
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 font-semibold text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500"
-            >
-              {editingId ? "Сохранить" : "Добавить победу"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowForm(false);
-                setEditingId(null);
-              }}
-              className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-300"
-            >
-              Отмена
-            </button>
-          </div>
-        </form>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="glass-card max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl p-6 space-y-4"
+          >
+            <h3 className="text-lg font-bold text-slate-100">
+              {form.id ? "✏️ Редактировать победу" : "✨ Новая победа"}
+            </h3>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-400">
+                Название победы
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder="Например: Запустил свой первый проект"
+                className="w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                maxLength={200}
+                required
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-400">
+                Описание (необязательно)
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Что сделало эту победу особенной?"
+                className="w-full rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                rows={3}
+                maxLength={500}
+              />
+            </div>
+
+            {/* Image upload */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-400">
+                Скриншот/изображение (необязательно)
+              </label>
+
+              {form.imagePreview || form.imageUrl ? (
+                <div className="relative mb-2 overflow-hidden rounded-xl">
+                  <Image
+                    src={form.imagePreview || form.imageUrl!}
+                    alt="Превью"
+                    width={400}
+                    height={200}
+                    className="h-48 w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute right-2 top-2 rounded-lg bg-red-900/80 px-2 py-1 text-xs text-red-300 transition-colors hover:bg-red-800"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-600 p-6 transition-colors hover:border-amber-500/50"
+                >
+                  <span className="mb-1 text-2xl">📎</span>
+                  <span className="text-sm text-slate-400">
+                    Нажмите, чтобы выбрать файл
+                  </span>
+                  <span className="text-xs text-slate-600">
+                    PNG, JPEG, WebP, GIF до 5MB
+                  </span>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 font-semibold text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500 disabled:opacity-50"
+              >
+                {isSaving
+                  ? "Сохраняю…"
+                  : form.id
+                    ? "Сохранить"
+                    : "Добавить победу"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setForm(emptyForm());
+                }}
+                className="rounded-xl border border-slate-600 px-6 py-3 font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-300"
+              >
+                Отмена
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
-      {/* Victory list */}
+      {/* Poster grid */}
       {victories.length > 0 && (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {victories.map((victory, index) => (
             <div
               key={victory.id}
-              className="glass-card group relative overflow-hidden rounded-2xl p-5 transition-all hover:border-amber-500/30"
+              draggable
+              onDragStart={() => handleDragStart(victory.id)}
+              onDragOver={(e) => handleDragOver(e, victory.id)}
+              onDrop={(e) => handleDrop(e, victory.id)}
+              onDragEnd={() => setDragId(null)}
+              className={`group relative overflow-hidden rounded-2xl border transition-all ${
+                dragId === victory.id
+                  ? "border-amber-500/50 opacity-50"
+                  : "border-slate-700/50 hover:border-amber-500/30"
+              }`}
             >
+              {/* Drag handle */}
+              <div className="absolute left-2 top-2 z-10 cursor-grab rounded-lg bg-slate-900/80 px-2 py-1 text-xs text-slate-500 opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing">
+                ⠿
+              </div>
+
               {/* Position badge */}
-              <div className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-400">
+              <div className="absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-400">
                 {index + 1}
               </div>
 
-              {/* Edit/delete buttons — always visible on mobile, on hover on desktop */}
-              <div className="absolute right-3 top-3 flex gap-1 opacity-60 transition-opacity group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100">
+              {/* Edit/delete buttons */}
+              <div className="absolute right-3 top-3 z-10 flex gap-1 opacity-60 md:opacity-0 md:group-hover:opacity-100">
                 <button
                   onClick={() => openEditForm(victory)}
                   className="rounded-lg bg-slate-700/80 p-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-600 hover:text-slate-200"
@@ -216,13 +405,31 @@ export default function VictoryPoster() {
                 </button>
               </div>
 
+              {/* Image poster */}
+              {victory.imageUrl && (
+                <div className="relative h-40 w-full overflow-hidden">
+                  <Image
+                    src={victory.imageUrl}
+                    alt={victory.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900 to-transparent" />
+                </div>
+              )}
+
               {/* Content */}
-              <div className="pl-10 pr-10 md:pr-12">
-                <h3 className="text-lg font-semibold text-slate-100">
+              <div
+                className={`${
+                  victory.imageUrl ? "p-4 pt-3" : "p-5"
+                }`}
+              >
+                <h3 className="text-base font-semibold text-slate-100">
                   {victory.title}
                 </h3>
                 {victory.description && (
-                  <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                  <p className="mt-1 text-sm leading-relaxed text-slate-400 line-clamp-2">
                     {victory.description}
                   </p>
                 )}
