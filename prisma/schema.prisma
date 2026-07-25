@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// Запись о победе пользователя (Топ-10)
+model Victory {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  position    Int      // 1–10
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("victories")
+}
+
+/// Ежедневная запись E-S-P дневника
+model ESPEntry {
+  id        String   @id @default(cuid())
+  date      DateTime @unique // одна запись на день
+  effort    String   // E — Effort
+  success   String   // S — Success
+  progress  String   // P — Progress
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("esp_entries")
+}
