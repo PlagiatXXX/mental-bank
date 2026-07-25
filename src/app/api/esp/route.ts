@@ -1,31 +1,87 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/esp?date=2025-07-25 — получить запись за конкретную дату
+// GET /api/esp
+//   ?date=2025-07-25    — запись за конкретную дату
+//   ?search=keyword     — поиск по всем полям
+//   &filter=effort|success|progress — поле для поиска
+//   &limit=20&offset=0  — пагинация
+//   &calendar=2026-07    — месячный календарь (return: массив дат)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const dateStr = searchParams.get("date");
+    const search = searchParams.get("search");
+    const filter = searchParams.get("filter");
+    const limit = Math.min(100, parseInt(searchParams.get("limit") || "50"));
+    const offset = parseInt(searchParams.get("offset") || "0");
+    const calendar = searchParams.get("calendar");
 
-    // Если дата не указана, возвращаем все записи
-    if (!dateStr) {
+    // Режим календаря: возвращает список дат и количество записей за месяц
+    if (calendar) {
+      const [year, month] = calendar.split("-").map(Number);
+      const start = new Date(Date.UTC(year, month - 1, 1));
+      const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
       const entries = await prisma.eSPEntry.findMany({
-        orderBy: { date: "desc" },
+        where: {
+          date: { gte: start, lte: end },
+        },
+        select: { date: true },
+        orderBy: { date: "asc" },
       });
-      return NextResponse.json(entries);
+
+      // Возвращаем массив дат (YYYY-MM-DD), в которых есть записи
+      const dates = entries.map((e) =>
+        e.date.toISOString().split("T")[0]
+      );
+      return NextResponse.json(dates);
     }
 
-    const date = new Date(dateStr + "T00:00:00.000Z");
+    // Поиск/фильтрация
+    if (search) {
+      const validFilters = ["effort", "success", "progress"];
+      const fields = filter && validFilters.includes(filter)
+        ? [filter]
+        : validFilters;
 
-    const entry = await prisma.eSPEntry.findUnique({
-      where: { date },
+      const where = {
+        OR: fields.map((field) => ({
+          [field]: { contains: search, mode: "insensitive" as const },
+        })),
+      };
+
+      const [entries, total] = await Promise.all([
+        prisma.eSPEntry.findMany({
+          where,
+          orderBy: { date: "desc" },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.eSPEntry.count({ where }),
+      ]);
+
+      return NextResponse.json({ entries, total });
+    }
+
+    // Одна запись по дате
+    if (dateStr) {
+      const date = new Date(dateStr + "T00:00:00.000Z");
+      const entry = await prisma.eSPEntry.findUnique({
+        where: { date },
+      });
+      return NextResponse.json(entry);
+    }
+
+    // Все записи (по умолчанию)
+    const entries = await prisma.eSPEntry.findMany({
+      orderBy: { date: "desc" },
     });
-
-    return NextResponse.json(entry);
+    return NextResponse.json(entries);
   } catch (error) {
     console.error("GET /api/esp error:", error);
     return NextResponse.json(
-      { error: "Не удалось загрузить запись" },
+      { error: "Не удалось загрузить записи" },
       { status: 500 }
     );
   }
@@ -44,18 +100,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Устанавливаем дату на начало дня (UTC)
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    // Проверяем, нет ли уже записи на сегодня
     const existing = await prisma.eSPEntry.findUnique({
       where: { date: today },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: "Запись на сегодня уже существует. Используйте PATCH для обновления." },
+        {
+          error:
+            "Запись на сегодня уже существует. Используйте PATCH для обновления.",
+        },
         { status: 409 }
       );
     }
