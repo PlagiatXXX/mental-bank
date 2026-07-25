@@ -35,6 +35,8 @@ export default function VictoryPoster() {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [isSaving, setIsSaving] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [aiValidate, setAiValidate] = useState<string | null>(null); // сообщение валидации
+  const [aiLoading, setAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchVictories = useCallback(async () => {
@@ -68,7 +70,29 @@ export default function VictoryPoster() {
       imageFile: null,
       imagePreview: null,
     });
+    setAiValidate(null);
     setShowForm(true);
+  };
+
+  const handleAiValidate = async () => {
+    if (!form.title.trim()) return;
+    setAiLoading(true);
+    setAiValidate(null);
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "validate", text: form.title.trim() }),
+      });
+      if (res.ok) {
+        const { suggestion } = await res.json();
+        setAiValidate(suggestion);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,9 +274,22 @@ export default function VictoryPoster() {
             </h3>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-400">
-                Название победы
-              </label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-sm font-medium text-slate-400">
+                  Название победы
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAiValidate}
+                  disabled={aiLoading || !form.title.trim()}
+                  className="rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-amber-500/10 hover:text-amber-400 disabled:opacity-50"
+                >
+                  {aiLoading ? "⏳" : "✨ Проверить"}
+                </button>
+              </div>
+              {aiValidate && (
+                <p className="mb-2 text-xs text-emerald-400">{aiValidate}</p>
+              )}
               <input
                 type="text"
                 value={form.title}

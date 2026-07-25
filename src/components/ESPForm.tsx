@@ -29,6 +29,7 @@ export default function ESPForm() {
   const [effort, setEffort] = useState("");
   const [success, setSuccess] = useState("");
   const [progress, setProgress] = useState("");
+  const [aiLoading, setAiLoading] = useState<string | null>(null); // id поля, которое загружается
 
   const fetchToday = useCallback(async () => {
     try {
@@ -85,6 +86,33 @@ export default function ESPForm() {
     }
   };
 
+  // AI-assist handler
+  const askAI = async (field: "effort" | "success" | "progress", text: string) => {
+    if (!text.trim()) return;
+    setAiLoading(field);
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "reframe", text: text.trim(), field }),
+      });
+      if (res.ok) {
+        const { suggestion } = await res.json();
+        if (suggestion) {
+          switch (field) {
+            case "effort": setEffort(suggestion); break;
+            case "success": setSuccess(suggestion); break;
+            case "progress": setProgress(suggestion); break;
+          }
+        }
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
   const isToday =
     todayEntry &&
     new Date(todayEntry.date).toDateString() === new Date().toDateString();
@@ -115,13 +143,20 @@ export default function ESPForm() {
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {/* E - Effort */}
         <div className="glass-card rounded-2xl p-5">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/20 text-sm font-bold text-amber-400">
-              E
-            </span>
-            <label className="text-sm font-semibold text-amber-400">
-              Усилие (Effort)
-            </label>
+          <div className="mb-1 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/20 text-sm font-bold text-amber-400">E</span>
+              <label className="text-sm font-semibold text-amber-400">Усилие (Effort)</label>
+            </div>
+            <button
+              type="button"
+              onClick={() => askAI("effort", effort)}
+              disabled={aiLoading === "effort"}
+              className="rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-amber-500/10 hover:text-amber-400 disabled:opacity-50"
+              title="Помоги сформулировать"
+            >
+              {aiLoading === "effort" ? "⏳" : "✨ AI"}
+            </button>
           </div>
           <p className="mb-3 text-xs text-slate-500">{prompts.effort}</p>
           <textarea
@@ -137,13 +172,20 @@ export default function ESPForm() {
 
         {/* S - Success */}
         <div className="glass-card rounded-2xl p-5">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">
-              S
-            </span>
-            <label className="text-sm font-semibold text-emerald-400">
-              Успех (Success)
-            </label>
+          <div className="mb-1 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-400">S</span>
+              <label className="text-sm font-semibold text-emerald-400">Успех (Success)</label>
+            </div>
+            <button
+              type="button"
+              onClick={() => askAI("success", success)}
+              disabled={aiLoading === "success"}
+              className="rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-50"
+              title="Помоги сформулировать"
+            >
+              {aiLoading === "success" ? "⏳" : "✨ AI"}
+            </button>
           </div>
           <p className="mb-3 text-xs text-slate-500">{prompts.success}</p>
           <textarea
@@ -159,13 +201,20 @@ export default function ESPForm() {
 
         {/* P - Progress */}
         <div className="glass-card rounded-2xl p-5">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-400">
-              P
-            </span>
-            <label className="text-sm font-semibold text-sky-400">
-              Прогресс (Progress)
-            </label>
+          <div className="mb-1 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500/20 text-sm font-bold text-sky-400">P</span>
+              <label className="text-sm font-semibold text-sky-400">Прогресс (Progress)</label>
+            </div>
+            <button
+              type="button"
+              onClick={() => askAI("progress", progress)}
+              disabled={aiLoading === "progress"}
+              className="rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-sky-500/10 hover:text-sky-400 disabled:opacity-50"
+              title="Помоги сформулировать"
+            >
+              {aiLoading === "progress" ? "⏳" : "✨ AI"}
+            </button>
           </div>
           <p className="mb-3 text-xs text-slate-500">{prompts.progress}</p>
           <textarea
