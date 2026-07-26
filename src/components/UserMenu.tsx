@@ -76,7 +76,7 @@ export default function UserMenu({
     <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm transition-colors hover:bg-slate-800"
+        className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-sm transition-colors hover:bg-slate-800"
         title="Профиль"
       >
         <span className="text-lg">{user.avatar}</span>

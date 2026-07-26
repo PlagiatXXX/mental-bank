@@ -179,7 +179,6 @@ export default function Dashboard() {
       bg: "bg-amber-500/10",
       icon: "📖",
       href: "/esp-journal",
-      chapter: "Гл. 2",
     },
     {
       key: "account2" as const,
@@ -190,7 +189,6 @@ export default function Dashboard() {
       bg: "bg-emerald-500/10",
       icon: "💬",
       href: "/account-2",
-      chapter: "Гл. 3",
     },
     {
       key: "account3" as const,
@@ -201,7 +199,6 @@ export default function Dashboard() {
       bg: "bg-sky-500/10",
       icon: "🎬",
       href: "/account-3",
-      chapter: "Гл. 4",
     },
   ];
 
@@ -211,7 +208,7 @@ export default function Dashboard() {
       {coin && <CoinFly from={coin.from} to={coin.to} onFinish={onCoinFinish} />}
 
       {/* Main balance */}
-      <div className="glass-card rounded-2xl p-6 text-center">
+      <div id="main-balance" className="glass-card rounded-2xl p-6 text-center">
         <div
           ref={balanceRef}
           className={`mb-2 flex items-center justify-center gap-3 ${bumping ? "animate-balance-bump" : ""}`}
@@ -243,7 +240,7 @@ export default function Dashboard() {
       </div>
 
       {/* Deposit form */}
-      <div className="glass-card rounded-2xl p-5">
+      <div id="deposit-form" className="glass-card rounded-2xl p-5">
         {depositDone && todayDeposit ? (
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-lg">
@@ -299,13 +296,14 @@ export default function Dashboard() {
       )}
 
       {/* Growth chart */}
-      {balance.history && <GrowthChart data={balance.history} />}
+      {balance.history && <div id="growth-chart"><GrowthChart data={balance.history} /></div>}
 
       {/* 3 account cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div id="account-cards" className="grid gap-4 sm:grid-cols-3">
         {accounts.map((acc) => (
           <Link
             key={acc.key}
+            id={acc.key}
             href={acc.href}
             className={`glass-card rounded-2xl border p-4 text-center transition-all hover:scale-[1.02] ${acc.bg}`}
           >
@@ -317,75 +315,9 @@ export default function Dashboard() {
               {acc.label}
             </div>
             <div className="mt-0.5 text-[10px] text-slate-500">{acc.sub}</div>
-            <div className="mt-1 text-[10px] text-slate-600">{acc.chapter}</div>
           </Link>
         ))}
       </div>
-
-      {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Link
-          href="/esp-journal"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-amber-500/30"
-        >
-          <div className="text-lg">📝</div>
-          <div className="text-xs font-medium text-slate-300">ESP-дневник</div>
-        </Link>
-        <Link
-          href="/top-10"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-amber-500/30"
-        >
-          <div className="text-lg">🏆</div>
-          <div className="text-xs font-medium text-slate-300">Топ-10</div>
-        </Link>
-        <Link
-          href="/protection"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-rose-500/30"
-        >
-          <div className="text-lg">🛡️</div>
-          <div className="text-xs font-medium text-slate-300">Защита</div>
-        </Link>
-        <Link
-          href="/rituals"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-purple-500/30"
-        >
-          <div className="text-lg">⚡</div>
-          <div className="text-xs font-medium text-slate-300">Ритуалы</div>
-        </Link>
-        <Link
-          href="/cba"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-sky-500/30"
-        >
-          <div className="text-lg">🌬️</div>
-          <div className="text-xs font-medium text-slate-300">C-B-A</div>
-        </Link>
-        <Link
-          href="/aar"
-          className="glass-card rounded-2xl p-4 text-center transition-all hover:border-emerald-500/30"
-        >
-          <div className="text-lg">🔄</div>
-          <div className="text-xs font-medium text-slate-300">AAR</div>
-        </Link>
-      </div>
-
-      {/* Deposit history link */}
-      <Link
-        href="/deposits"
-        className="glass-card flex items-center gap-3 rounded-2xl p-4 transition-all hover:border-amber-500/30"
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-lg">
-          📜
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-medium text-slate-200">
-            История депозитов
-          </div>
-          <p className="text-xs text-slate-500">
-            Все ваши депозиты — от первого до сегодняшнего
-          </p>
-        </div>
-        <div className="text-lg text-slate-600">→</div>
-      </Link>
     </div>
   );
 }

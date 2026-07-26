@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import VictoryPoster from "@/components/VictoryPoster";
 import ChapterInfo from "@/components/ChapterInfo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Топ-10 побед",
+};
 
 export default function Top10Page() {
   return (

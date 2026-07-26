@@ -24,7 +24,7 @@ const socials = [
 
 export default function SocialLinks() {
   return (
-    <div className="flex items-center gap-3">
+    <div id="social-links" className="flex items-center gap-3">
       {socials.map(({ name, href, color, viewBox, path }) => (
         <a
           key={name}

@@ -29,18 +29,18 @@ export default function DonateBlock() {
   return (
     <div>
       <p className="text-[15px] leading-relaxed text-slate-300">
-        Если приложение стало для вас полезным — вы сможете{" "}
+        Если проект приносит пользу —{" "}
         <button
+          id="donate-button"
           onClick={() => setShow(!show)}
           className="inline font-medium text-amber-400 underline decoration-amber-400/30 underline-offset-2 transition-colors hover:decoration-amber-400/80"
           style={{
             cursor: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Ctext y=\'20\' font-size=\'20\'%3E❤️%3C/text%3E%3C/svg%3E") 12 12, pointer',
           }}
         >
-          поблагодарить
+          можете поддержать автора
         </button>
-        {" "}автора. Но никаких обязательств.
-        Инструмент должен работать на вас, а не наоборот.
+        .
       </p>
 
       {show && (

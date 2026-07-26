@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/", label: "Баланс", icon: "🏦", mobileLabel: "Баланс" },
-  { href: "/esp-journal", label: "ESP-дневник", icon: "📝", mobileLabel: "ESP" },
-  { href: "/top-10", label: "Топ-10 побед", icon: "🏆", mobileLabel: "Топ-10" },
-  { href: "/account-2", label: "Аффирмации", icon: "💬", mobileLabel: "Счёт №2" },
-  { href: "/account-3", label: "Визуализация", icon: "🎬", mobileLabel: "Счёт №3" },
-  { href: "/aar", label: "AAR — разбор", icon: "🔄", mobileLabel: "AAR" },
+  { id: "nav-balance", href: "/", label: "Баланс", icon: "🏦", mobileLabel: "Баланс" },
+  { id: "nav-esp", href: "/esp-journal", label: "ESP-дневник", icon: "📝", mobileLabel: "ESP" },
+  { id: "nav-top10", href: "/top-10", label: "Топ-10 побед", icon: "🏆", mobileLabel: "Топ-10" },
+  { id: "nav-affirmations", href: "/account-2", label: "Аффирмации", icon: "💬", mobileLabel: "Счёт №2" },
+  { id: "nav-visualization", href: "/account-3", label: "Визуализация", icon: "🎬", mobileLabel: "Счёт №3" },
+  { id: "nav-aar", href: "/aar", label: "AAR — разбор", icon: "🔄", mobileLabel: "AAR" },
 ];
 
 export default function Navigation() {
@@ -90,6 +90,7 @@ export default function Navigation() {
             return (
               <Link
                 key={item.href}
+                id={item.id}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
@@ -109,15 +110,16 @@ export default function Navigation() {
           </div>
 
           {[
-            { href: "/mindset", label: "Убеждения (гл.6)", icon: "🧠" },
-            { href: "/protection", label: "Защита уверенности", icon: "🛡️" },
-            { href: "/rituals", label: "Ритуалы", icon: "⚡" },
-            { href: "/cba", label: "C-B-A / Дыхание", icon: "🌬️" },
+            { id: "nav-mindset", href: "/mindset", label: "Убеждения", icon: "🧠" },
+            { id: "nav-protection", href: "/protection", label: "Защита уверенности", icon: "🛡️" },
+            { id: "nav-rituals", href: "/rituals", label: "Ритуалы", icon: "⚡" },
+            { id: "nav-cba", href: "/cba", label: "C-B-A / Дыхание", icon: "🌬️" },
           ].map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
+                id={item.id}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
@@ -137,6 +139,7 @@ export default function Navigation() {
           </div>
 
           <Link
+            id="nav-deposits"
             href="/deposits"
             aria-current={pathname === "/deposits" ? "page" : undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${

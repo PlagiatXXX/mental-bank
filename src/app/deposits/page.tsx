@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import DepositHistoryList from "@/components/DepositHistoryList";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "История депозитов",
+};
 
 export default function DepositsPage() {
   return (

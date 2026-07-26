@@ -8,7 +8,7 @@ import AppHeader from "@/components/AppHeader";
 import MainContent from "@/components/MainContent";
 import SidebarLayout from "@/components/SidebarLayout";
 import InfoModal from "@/components/InfoModal";
-import DonateBlock from "@/components/DonateBlock";
+import Onboarding from "@/components/Onboarding";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,9 +21,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ментальный банк",
+  title: {
+    default: "Ментальный банк",
+    template: "%s — Ментальный банк",
+  },
   description:
     "Стройте уверенность, фиксируя только конструктивные мысли и достижения. Методология First Victory — Нэйт Занссер.",
+  metadataBase: new URL("https://mentalbank.ru"),
+  openGraph: {
+    title: "Ментальный банк",
+    description:
+      "Стройте уверенность, фиксируя только конструктивные мысли и достижения. Методология First Victory — Нэйт Занссер.",
+    siteName: "Ментальный банк",
+    locale: "ru_RU",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Ментальный банк",
+    description:
+      "Стройте уверенность, фиксируя только конструктивные мысли и достижения. Методология First Victory — Нэйт Занссер.",
+  },
+  manifest: "/manifest.webmanifest",
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "theme-color": "#f59e0b",
+  },
   icons: {
     icon: [
       { url: "/logo/logo-96x96.png", sizes: "96x96", type: "image/png" },
@@ -90,14 +114,14 @@ export default function RootLayout({
                 </p>
               </div>
 
-              <DonateBlock />
-
               <p className="text-[15px] leading-relaxed text-slate-400">
                 Начните с дневника ESP — запишите свою первую победу.
                 Остальное придёт само.
               </p>
             </div>
           </InfoModal>
+
+          <Onboarding />
         </AuthGate>
       </body>
     </html>

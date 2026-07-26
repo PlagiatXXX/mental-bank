@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SocialLinks from "./SocialLinks";
+import DonateBlock from "./DonateBlock";
 
 const mainLinks = [
   { href: "/", label: "Баланс" },
@@ -48,6 +49,9 @@ export default function Footer() {
             </p>
             <div className="mt-4">
               <SocialLinks />
+            </div>
+            <div className="mt-4">
+              <DonateBlock />
             </div>
           </div>
 

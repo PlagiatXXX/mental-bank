@@ -30,13 +30,13 @@ export default function InfoModal({ children }: { children: React.ReactNode }) {
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-4 overflow-y-auto">
       {/* overlay — только фон, закрытие только по крестику */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* card */}
       <div
-        className="relative mx-auto w-full max-w-xl animate-modal-in rounded-2xl bg-slate-900 p-8 pt-6 shadow-2xl ring-1 ring-slate-700/50"
+        className="relative mx-auto w-full max-w-2xl animate-modal-in rounded-2xl bg-slate-900 p-5 shadow-2xl ring-1 ring-slate-700/50 sm:p-8 sm:pt-6 my-auto"
         role="dialog"
         aria-modal="true"
       >
@@ -56,6 +56,16 @@ export default function InfoModal({ children }: { children: React.ReactNode }) {
         </button>
 
         {children}
+
+        {/* Footer */}
+        <div className="mt-6 flex justify-end border-t border-slate-700/50 pt-4">
+          <button
+            onClick={handleClose}
+            className="gold-glow rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-3 text-sm font-bold tracking-wider text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500"
+          >
+            Вперёд! →
+          </button>
+        </div>
       </div>
     </div>,
     document.body,

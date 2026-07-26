@@ -2,20 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import UserMenu from "./UserMenu";
-
-interface User {
-  id: string;
-  nickname: string;
-  avatar: string;
-}
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [revision, setRevision] = useState(0);
 
   const isWelcome = pathname === "/welcome";
 
@@ -32,7 +23,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       .then((data) => {
         if (cancelled) return;
         if (data.user) {
-          setUser(data.user);
+          // user logged in — AppHeader подхватит сам
         } else {
           router.replace("/welcome");
         }
@@ -47,7 +38,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isWelcome, revision, router]);
+  }, [isWelcome, router]);
 
   if (loading) {
     return (
@@ -59,16 +50,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {/* Mini-profile — только для авторизованных пользователей */}
-      {user && (
-        <div className="fixed right-4 top-4 z-50">
-          <UserMenu
-            user={user}
-            onSaved={() => setRevision((v) => v + 1)}
-          />
-        </div>
-      )}
-
       {children}
     </>
   );
