@@ -52,6 +52,7 @@ next-env.d.ts
 .claude/
 .windsurf/
 .opencode/
+.history/
 .codegraph/
 .agents/
 skills-lock.json
