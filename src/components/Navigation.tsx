@@ -66,7 +66,13 @@ export default function Navigation() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 border-b border-slate-700/50 px-5 py-5">
-          <span className="text-2xl" aria-hidden="true">🪙</span>
+          <img
+            src="/logo/logo-96x96.webp"
+            alt=""
+            width={48}
+            height={48}
+            className="shrink-0"
+          />
           <div>
             <div className="text-sm font-bold text-slate-100">Ментальный банк</div>
             <div className="text-[10px] text-slate-500">Только депозиты</div>
@@ -125,6 +131,23 @@ export default function Navigation() {
               </Link>
             );
           })}
+
+          <div className="mb-2 mt-6 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+            История
+          </div>
+
+          <Link
+            href="/deposits"
+            aria-current={pathname === "/deposits" ? "page" : undefined}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+              pathname === "/deposits"
+                ? "bg-amber-500/15 text-amber-400"
+                : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+            }`}
+          >
+            <span className="text-lg" aria-hidden="true">📜</span>
+            <span>История депозитов</span>
+          </Link>
         </div>
 
       </nav>

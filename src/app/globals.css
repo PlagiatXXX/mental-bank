@@ -56,6 +56,22 @@ body {
   background: #475569;
 }
 
+/* Modal entrance animation */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modalIn 0.3s ease-out;
+}
+
 /* Gold coin animation */
 @keyframes coinGlow {
   0%, 100% {
@@ -86,6 +102,34 @@ body {
   animation: countUp 0.6s ease-out forwards;
 }
 
+/* Coin fly animation — парабола для монеты */
+@keyframes coinFly {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+.animate-coin-fly {
+  animation: coinFly var(--fly-duration, 600ms) ease-in forwards;
+}
+
+/* Balance bump — вспышка при пополнении */
+@keyframes balanceBump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.12); }
+  60% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.animate-balance-bump {
+  animation: balanceBump 0.4s ease-out;
+}
+
 /* Glass card effect */
 .glass-card {
   background: rgba(30, 41, 59, 0.7);
@@ -107,9 +151,15 @@ body {
   border-radius: 0.5rem;
 }
 
-/* Layout — вне @layer, чтобы гарантированно переопределять Tailwind v4 preflight */
-.main-layout {
-  /* заменяет lg:ml-56 — отступ от боковой панели (w-56 = 14rem) */
+/* Layout — контейнер справа от боковой панели.
+   Единственное место, где задаётся отступ от sidebar'а (14rem = w-56).
+   Все страницы и футер внутри него получают правильное выравнивание
+   без дублирования класса на каждом компоненте. */
+.sidebar-offset {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
   @media (width >= 64rem) {
     margin-left: 14rem;
   }

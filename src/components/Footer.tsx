@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SocialLinks from "./SocialLinks";
 
 const mainLinks = [
   { href: "/", label: "Баланс" },
@@ -30,7 +31,13 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-flex items-center gap-2">
-              <span className="text-xl" aria-hidden="true">🪙</span>
+              <img
+                src="/logo/logo-96x96.webp"
+                alt=""
+                width={32}
+                height={32}
+                className="shrink-0"
+              />
               <span className="text-sm font-bold text-slate-100">
                 Ментальный банк
               </span>
@@ -39,6 +46,9 @@ export default function Footer() {
               Тренируйте уверенность по методологии Нэйта Занссера.
               Только депозиты. Никаких списаний.
             </p>
+            <div className="mt-4">
+              <SocialLinks />
+            </div>
           </div>
 
           {/* Pages */}
@@ -83,7 +93,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-8 border-t border-slate-800 pt-6 text-center">
           <p className="text-xs text-slate-600">
-            Основано на книге «The Confident Mind» Нэйта Занссера
+            Основано по книге «The Confident Mind» Нэйта Занссера
           </p>
           <p className="mt-1 text-xs text-slate-700">
             © {new Date().getFullYear()} Ментальный банк

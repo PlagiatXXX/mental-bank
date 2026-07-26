@@ -44,6 +44,17 @@ export async function requireUser() {
  * возвращает пустые данные вместо 401, так как AuthGate
  * на клиенте сам редиректит на /welcome.
  */
+export async function removeUserIdCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
+}
+
 export async function getOptionalUserId(): Promise<string | null> {
   try {
     return await getUserIdCookie();

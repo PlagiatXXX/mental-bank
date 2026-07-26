@@ -11,11 +11,19 @@ interface User {
 
 const AVATARS = ["🦁", "🐯", "🐻", "🐺", "🦅", "🐉", "🦈", "🐆", "🦌", "🦊", "🪙", "⭐"];
 
-export default function UserMenu({ user }: { user: User }) {
+export default function UserMenu({
+  user,
+  onSaved,
+}: {
+  user: User;
+  onSaved?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [nickname, setNickname] = useState(user.nickname);
   const [avatar, setAvatar] = useState(user.avatar);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -31,6 +39,21 @@ export default function UserMenu({ user }: { user: User }) {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/auth/me", { method: "DELETE" });
+      if (!res.ok) return;
+      // Очищаем всё локальное и редиректим на приветствие
+      localStorage.clear();
+      window.location.href = "/welcome";
+    } catch {
+      // ignore
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -40,6 +63,7 @@ export default function UserMenu({ user }: { user: User }) {
         body: JSON.stringify({ nickname, avatar }),
       });
       setOpen(false);
+      onSaved?.();
       router.refresh();
     } catch {
       // ignore
@@ -114,6 +138,34 @@ export default function UserMenu({ user }: { user: User }) {
             >
               {saving ? "…" : "Сохранить"}
             </button>
+          </div>
+
+          {/* Delete account */}
+          <div className="mt-4 border-t border-slate-700/50 pt-3">
+            {confirmDelete ? (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 rounded-lg bg-slate-800 py-2 text-xs font-medium text-slate-400 transition-colors hover:bg-slate-700"
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 rounded-lg bg-red-600 py-2 text-xs font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+                >
+                  {deleting ? "…" : "Удалить"}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full rounded-lg py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30"
+              >
+                Удалить аккаунт
+              </button>
+            )}
           </div>
         </div>
       )}

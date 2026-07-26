@@ -9,7 +9,13 @@ export default function AppHeader() {
   return (
     <header className="mb-6 text-center lg:text-left">
       <div className="mb-1 flex items-center justify-center gap-2 lg:justify-start">
-        <span className="text-2xl" aria-hidden="true">🪙</span>
+        <img
+          src="/logo/logo-96x96.webp"
+          alt=""
+          width={40}
+          height={40}
+          className="shrink-0"
+        />
         <h1 className="text-2xl font-bold tracking-tight text-slate-100">
           Ментальный банк
         </h1>

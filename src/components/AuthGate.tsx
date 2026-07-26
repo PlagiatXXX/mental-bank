@@ -15,6 +15,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
 
   const isWelcome = pathname === "/welcome";
 
@@ -46,7 +47,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isWelcome, router]);
+  }, [isWelcome, revision, router]);
 
   if (loading) {
     return (
@@ -61,7 +62,10 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       {/* Mini-profile — только для авторизованных пользователей */}
       {user && (
         <div className="fixed right-4 top-4 z-50">
-          <UserMenu user={user} />
+          <UserMenu
+            user={user}
+            onSaved={() => setRevision((v) => v + 1)}
+          />
         </div>
       )}
 

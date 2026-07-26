@@ -22,8 +22,22 @@ model User {
   confidenceAttacks  ConfidenceAttack[]
   rituals            Ritual[]
   aars               AAR[]
+  deposits           Deposit[]
 
   @@map("users")
+}
+
+/// Быстрый депозит с главной страницы — одно действие, без структуры E-S-P
+model Deposit {
+  id        String   @id @default(cuid())
+  text      String   // что сделал пользователь
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("deposits")
+  @@index([userId])
 }
 
 /// Запись о победе пользователя (Топ-10) — Глава 2, Счёт №1

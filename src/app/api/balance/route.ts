@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const where = { userId };
 
-    const [victories, espEntries, affirmations, visualizations, aars, rituals] =
+    const [victories, espEntries, affirmations, visualizations, aars, rituals, deposits] =
       await Promise.all([
         prisma.victory.count({ where }),
         prisma.eSPEntry.count({ where }),
@@ -34,17 +34,18 @@ export async function GET(request: Request) {
         prisma.visualization.count({ where }),
         prisma.aAR.count({ where }),
         prisma.ritual.count({ where }),
+        prisma.deposit.count({ where }),
       ]);
 
     const account1 = victories + espEntries;
     const account2 = affirmations;
     const account3 = visualizations;
-    const total = account1 + account2 + account3 + aars + rituals;
+    const total = account1 + account2 + account3 + aars + rituals + deposits;
 
     let history: { date: string; cumulative: number }[] | undefined;
 
     if (withHistory) {
-      const [allVictories, allEsp, allAffirmations, allVisualizations, allAars, allRituals] =
+      const [allVictories, allEsp, allAffirmations, allVisualizations, allAars, allRituals, allDeposits] =
         await Promise.all([
           prisma.victory.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
           prisma.eSPEntry.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
@@ -52,6 +53,7 @@ export async function GET(request: Request) {
           prisma.visualization.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
           prisma.aAR.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
           prisma.ritual.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.deposit.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
         ]);
 
       const events = [
@@ -61,6 +63,7 @@ export async function GET(request: Request) {
         ...allVisualizations,
         ...allAars,
         ...allRituals,
+        ...allDeposits,
       ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
       const dailyCounts: Record<string, number> = {};
@@ -89,6 +92,7 @@ export async function GET(request: Request) {
       visualizations,
       aars,
       rituals,
+      deposits,
       history: history && history.length > 1 ? history : undefined,
     });
   } catch (error) {
