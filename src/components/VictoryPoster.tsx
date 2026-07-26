@@ -56,6 +56,16 @@ export default function VictoryPoster() {
     fetchVictories();
   }, [fetchVictories]);
 
+  // Блокировка скролла при открытой модалке
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showForm]);
+
   const openAddForm = () => {
     setForm(emptyForm());
     setShowForm(true);
@@ -217,6 +227,60 @@ export default function VictoryPoster() {
     await fetchVictories();
   };
 
+  // Touch drag-n-drop для мобильных
+  const touchDragRef = useRef<{ id: string; startY: number; startX: number } | null>(null);
+
+  const handleTouchStart = (id: string) => (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchDragRef.current = { id, startY: touch.clientY, startX: touch.clientX };
+    setDragId(id);
+  };
+
+  const handleTouchEnd = (id: string) => async (e: React.TouchEvent) => {
+    if (!touchDragRef.current || touchDragRef.current.id !== id) return;
+    const touch = e.changedTouches[0];
+    const dy = touch.clientY - touchDragRef.current.startY;
+    touchDragRef.current = null;
+    setDragId(null);
+
+    if (Math.abs(dy) < 30) return; // слишком маленькое движение
+
+    const fromIdx = victories.findIndex((v) => v.id === id);
+    if (fromIdx === -1) return;
+
+    // Находим карту под пальцем в момент отпускания
+    const cards = document.querySelectorAll('[data-victory-id]');
+    let targetIdx = -1;
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        targetIdx = i;
+        break;
+      }
+    }
+
+    if (targetIdx === -1 || targetIdx === fromIdx) return;
+    const targetId = cards[targetIdx]?.getAttribute('data-victory-id');
+    if (!targetId) return;
+
+    const dragged = victories[fromIdx];
+    const target = victories.find((v) => v.id === targetId);
+    if (!target) return;
+
+    const reordered = [...victories];
+    reordered.splice(fromIdx, 1);
+    reordered.splice(targetIdx, 0, dragged);
+    setVictories(reordered);
+
+    await fetch("/api/victories", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: dragged.id, position: target.position }),
+    });
+
+    await fetchVictories();
+  };
+
   if (isLoading) {
     return (
       <div className="glass-card rounded-2xl p-8 text-center">
@@ -230,7 +294,7 @@ export default function VictoryPoster() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-100">
-          🏆 Мои 10 лучших побед
+          <span aria-hidden="true">🏆</span> Мои 10 лучших побед
         </h2>
         {victories.length < 10 && (
           <button
@@ -245,7 +309,7 @@ export default function VictoryPoster() {
       {/* Empty state */}
       {victories.length === 0 && !showForm && (
         <div className="glass-card rounded-2xl p-10 text-center">
-          <div className="mb-3 text-5xl">🏅</div>
+          <div className="mb-3 text-5xl" aria-hidden="true">🏅</div>
           <p className="mb-2 text-lg font-medium text-slate-300">
             Ваш список побед пока пуст
           </p>
@@ -403,11 +467,14 @@ export default function VictoryPoster() {
           {victories.map((victory, index) => (
             <div
               key={victory.id}
+              data-victory-id={victory.id}
               draggable
               onDragStart={() => handleDragStart(victory.id)}
               onDragOver={(e) => handleDragOver(e, victory.id)}
               onDrop={(e) => handleDrop(e, victory.id)}
               onDragEnd={() => setDragId(null)}
+              onTouchStart={handleTouchStart(victory.id)}
+              onTouchEnd={handleTouchEnd(victory.id)}
               className={`group relative overflow-hidden rounded-2xl border transition-all ${
                 dragId === victory.id
                   ? "border-amber-500/50 opacity-50"

@@ -23,13 +23,14 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 px-4 py-1 text-xs font-medium transition-colors ${
                   isActive
                     ? "text-amber-400"
                     : "text-slate-500 hover:text-slate-300"
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             );
@@ -40,13 +41,14 @@ export default function Navigation() {
       {/* Desktop sidebar */}
       <nav className="fixed bottom-0 left-0 top-0 z-50 hidden w-20 flex-col items-center border-r border-slate-700/80 bg-slate-900/95 backdrop-blur-lg lg:flex">
         <div className="flex flex-col items-center gap-6 py-6">
-          <span className="text-2xl" title="Ментальный банк">🪙</span>
+          <span className="text-2xl" title="Ментальный банк" aria-hidden="true">🪙</span>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 px-2 py-2 text-xs font-medium transition-colors ${
                   isActive
                     ? "text-amber-400"
@@ -54,7 +56,7 @@ export default function Navigation() {
                 }`}
                 title={item.label}
               >
-                <span className="text-xl">{item.icon}</span>
+                <span className="text-xl" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             );

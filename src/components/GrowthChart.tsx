@@ -37,7 +37,7 @@ export default function GrowthChart({ data }: GrowthChartProps) {
   return (
     <div className="glass-card rounded-2xl p-4">
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-        📈 Рост вкладов
+        <span aria-hidden="true">📈</span> Рост вкладов
       </h3>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}

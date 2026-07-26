@@ -25,12 +25,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 html {
   height: 100%;
 }
@@ -104,4 +98,30 @@ body {
 .gold-glow:hover {
   box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
   transition: box-shadow 0.3s ease;
+}
+
+/* Focus-visible для клавиатурной навигации */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Layout — вне @layer, чтобы гарантированно переопределять Tailwind v4 preflight */
+.main-layout {
+  /* заменяет lg:ml-20 — отступ от боковой панели */
+  @media (width >= 64rem) {
+    margin-left: 5rem;
+  }
+}
+
+.content-container {
+  /* заменяет px-4 lg:px-8 xl:px-12 */
+  padding-inline: 1rem;
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 80rem) {
+    padding-inline: 3rem;
+  }
 }

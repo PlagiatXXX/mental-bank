@@ -13,7 +13,7 @@ export default function Dashboard() {
           href="/top-10"
           className="glass-card group flex-1 basis-[200px] rounded-2xl p-5 text-center transition-all hover:border-amber-500/30"
         >
-          <div className="mb-2 text-3xl transition-transform group-hover:scale-110">
+          <div className="mb-2 text-3xl transition-transform group-hover:scale-110" aria-hidden="true">
             🏆
           </div>
           <div className="text-sm font-semibold text-slate-200">
@@ -26,7 +26,7 @@ export default function Dashboard() {
           href="/esp-journal"
           className="glass-card group flex-1 basis-[200px] rounded-2xl p-5 text-center transition-all hover:border-emerald-500/30"
         >
-          <div className="mb-2 text-3xl transition-transform group-hover:scale-110">
+          <div className="mb-2 text-3xl transition-transform group-hover:scale-110" aria-hidden="true">
             📝
           </div>
           <div className="text-sm font-semibold text-slate-200">

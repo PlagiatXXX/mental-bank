@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import GrowthChart from "./GrowthChart";
 
@@ -19,6 +19,7 @@ interface BalanceData {
 export default function BalanceCounter() {
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [animatedTotal, setAnimatedTotal] = useState(0);
+  const animationDoneRef = useRef(false);
 
   const fetchBalance = useCallback(async () => {
     try {
@@ -36,30 +37,37 @@ export default function BalanceCounter() {
     fetchBalance();
   }, [fetchBalance]);
 
-  // Анимация счета
+  // Анимация счета через requestAnimationFrame с easeOutCubic
   useEffect(() => {
     if (balance === null) return;
-
     const target = balance.total;
-    if (animatedTotal >= target) {
-      setAnimatedTotal(target);
-      return;
-    }
 
-    const step = Math.max(1, Math.floor(target / 50));
-    const interval = setInterval(() => {
-      setAnimatedTotal((prev) => {
-        const next = prev + step;
-        if (next >= target) {
-          clearInterval(interval);
-          return target;
-        }
-        return next;
-      });
-    }, 30);
+    if (animationDoneRef.current && animatedTotal === target) return;
 
-    return () => clearInterval(interval);
-  }, [balance, animatedTotal]);
+    animationDoneRef.current = false;
+    const DURATION = 800;
+    const start = performance.now();
+    let rafId: number;
+
+    const animate = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / DURATION, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(eased * target);
+
+      setAnimatedTotal(Math.min(current, target));
+
+      if (current >= target) {
+        animationDoneRef.current = true;
+      } else {
+        rafId = requestAnimationFrame(animate);
+      }
+    };
+
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balance]);
 
   if (!balance) {
     return (
@@ -76,14 +84,14 @@ export default function BalanceCounter() {
         {/* User photo + coin */}
         <div className="mx-auto mb-4 flex items-center justify-center gap-4">
           {/* User avatar */}
-          <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-amber-500/30 bg-slate-800">
+          <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-amber-500/30 bg-slate-800" aria-hidden="true">
             <div className="flex h-full w-full items-center justify-center text-2xl">
               👤
             </div>
           </div>
 
           {/* Gold coin */}
-          <div className="flex h-20 w-20 items-center justify-center rounded-full coin-glow bg-gradient-to-br from-amber-400 to-amber-600">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full coin-glow bg-gradient-to-br from-amber-400 to-amber-600" aria-hidden="true">
             <span className="text-4xl">🪙</span>
           </div>
         </div>

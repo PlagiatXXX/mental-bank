@@ -130,7 +130,7 @@ export default function ESPForm() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-100">
-          📝 Ежедневный E-S-P дневник
+          <span aria-hidden="true">📝</span> Ежедневный E-S-P дневник
         </h2>
         {isToday && (
           <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-400">

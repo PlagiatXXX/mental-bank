@@ -106,7 +106,7 @@ export default function ESPHistory() {
             placeholder="Поиск в ESP записях…"
             className="w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-2.5 pl-10 text-sm text-slate-100 placeholder-slate-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500" aria-hidden="true">
             🔍
           </span>
         </div>
