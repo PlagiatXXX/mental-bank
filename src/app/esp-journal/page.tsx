@@ -4,6 +4,7 @@ import { useState } from "react";
 import ESPForm from "@/components/ESPForm";
 import ESPCalendar from "@/components/ESPCalendar";
 import ESPHistory from "@/components/ESPHistory";
+import ChapterInfo from "@/components/ChapterInfo";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,13 @@ export default function ESPJournalPage() {
 
   return (
     <div className="space-y-4">
+      {/* Book context */}
+      <ChapterInfo
+        chapterNumber={2}
+        pageTitle="📝 E-S-P Дневник"
+        contextNote="ESP-журнал — основное упражнение для пополнения Счёта №1. Каждая запись — монета в ваш ментальный банк. Делайте его ежедневно, даже если день кажется «пустым» — всегда есть усилие, успех или прогресс."
+      />
+
       {/* Tabs */}
       <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1">
         <button

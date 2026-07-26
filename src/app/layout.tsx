@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import AuthGate from "@/components/AuthGate";
+import AppHeader from "@/components/AppHeader";
+import MainContent from "@/components/MainContent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ментальный банк",
   description:
-    "Стройте уверенность, фиксируя только конструктивные мысли и достижения. Методология First Victory — Dr. Joseph Parent.",
+    "Стройте уверенность, фиксируя только конструктивные мысли и достижения. Методология First Victory — Нэйт Занссер.",
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>",
   },
@@ -33,26 +37,17 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <Navigation />
+        <AuthGate>
+          <Navigation />
 
-        <main className="main-layout">
-          <div className="content-container mx-auto min-h-screen w-full max-w-lg pb-24 pt-6 transition-all lg:max-w-5xl lg:pb-6 xl:max-w-6xl">
-            {/* Header */}
-            <header className="mb-6 text-center lg:text-left">
-              <div className="mb-1 flex items-center justify-center gap-2 lg:justify-start">
-                <span className="text-2xl" aria-hidden="true">🪙</span>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-100">
-                  Ментальный банк
-                </h1>
-              </div>
-              <p className="text-xs text-slate-500">
-                Только депозиты. Никаких списаний.
-              </p>
-            </header>
+          <MainContent>
+            <AppHeader />
 
             {children}
-          </div>
-        </main>
+          </MainContent>
+
+          <Footer />
+        </AuthGate>
       </body>
     </html>
   );

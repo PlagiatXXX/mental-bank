@@ -109,9 +109,9 @@ body {
 
 /* Layout — вне @layer, чтобы гарантированно переопределять Tailwind v4 preflight */
 .main-layout {
-  /* заменяет lg:ml-20 — отступ от боковой панели */
+  /* заменяет lg:ml-56 — отступ от боковой панели (w-56 = 14rem) */
   @media (width >= 64rem) {
-    margin-left: 5rem;
+    margin-left: 14rem;
   }
 }
 

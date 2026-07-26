@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getOptionalUserId } from "@/lib/auth";
 
-// GET /api/victories — получить все победы, отсортированные по позиции
+// GET /api/victories
 export async function GET() {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json([]);
+
     const victories = await prisma.victory.findMany({
+      where: { userId },
       orderBy: { position: "asc" },
     });
     return NextResponse.json(victories);
@@ -17,9 +22,12 @@ export async function GET() {
   }
 }
 
-// POST /api/victories — создать новую победу
+// POST /api/victories
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { title, description, imageUrl } = body;
 
@@ -30,8 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Определяем следующую позицию (1–10)
-    const count = await prisma.victory.count();
+    const count = await prisma.victory.count({ where: { userId } });
     if (count >= 10) {
       return NextResponse.json(
         { error: "Максимум 10 побед" },
@@ -45,6 +52,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         imageUrl: imageUrl?.trim() || null,
         position: count + 1,
+        userId,
       },
     });
 
@@ -58,9 +66,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/victories — обновить победу (или переупорядочить)
+// PATCH /api/victories
 export async function PATCH(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { id, title, description, imageUrl, position } = body;
 
@@ -71,7 +82,6 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Режим переупорядочивания: передан position
     if (position !== undefined) {
       const victory = await prisma.victory.findUnique({ where: { id } });
       if (!victory) {
@@ -88,21 +98,20 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json(victory);
       }
 
-      // Сдвигаем остальные победы
       await prisma.$transaction(async (tx) => {
         if (newPos > oldPos) {
-          // Двигаем вниз: сдвигаем те, что между old и new, вверх
           await tx.victory.updateMany({
             where: {
+              userId,
               position: { gt: oldPos, lte: newPos },
               id: { not: id },
             },
             data: { position: { decrement: 1 } },
           });
         } else {
-          // Двигаем вверх: сдвигаем те, что между new и old, вниз
           await tx.victory.updateMany({
             where: {
+              userId,
               position: { gte: newPos, lt: oldPos },
               id: { not: id },
             },
@@ -117,12 +126,12 @@ export async function PATCH(request: NextRequest) {
       });
 
       const updated = await prisma.victory.findMany({
+        where: { userId },
         orderBy: { position: "asc" },
       });
       return NextResponse.json(updated);
     }
 
-    // Обычное обновление полей
     const data: Record<string, string | null> = {};
     if (title && typeof title === "string") data.title = title.trim();
     if (description !== undefined)
@@ -130,7 +139,7 @@ export async function PATCH(request: NextRequest) {
     if (imageUrl !== undefined) data.imageUrl = imageUrl?.trim() || null;
 
     const victory = await prisma.victory.update({
-      where: { id },
+      where: { id, userId },
       data,
     });
 
@@ -144,9 +153,12 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE /api/victories?id=xxx — удалить победу
+// DELETE /api/victories?id=xxx
 export async function DELETE(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -157,10 +169,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await prisma.victory.delete({ where: { id } });
+    await prisma.victory.delete({ where: { id, userId } });
 
-    // Перенумеровываем позиции
     const remaining = await prisma.victory.findMany({
+      where: { userId },
       orderBy: { position: "asc" },
     });
 

@@ -1,67 +1,101 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getOptionalUserId } from "@/lib/auth";
 
 // GET /api/balance
-//   ?history=true — добавить дневную историю для графика
 export async function GET(request: Request) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) {
+      return NextResponse.json({
+        total: 0,
+        account1: 0,
+        account2: 0,
+        account3: 0,
+        victories: 0,
+        espEntries: 0,
+        affirmations: 0,
+        visualizations: 0,
+        aars: 0,
+        rituals: 0,
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const withHistory = searchParams.get("history") === "true";
 
-    const [victories, espEntries, allVictories, allEsp] = await Promise.all([
-      prisma.victory.count(),
-      prisma.eSPEntry.count(),
-      withHistory
-        ? prisma.victory.findMany({
-            select: { createdAt: true },
-            orderBy: { createdAt: "asc" },
-          })
-        : Promise.resolve([]),
-      withHistory
-        ? prisma.eSPEntry.findMany({
-            select: { createdAt: true },
-            orderBy: { createdAt: "asc" },
-          })
-        : Promise.resolve([]),
-    ]);
+    const where = { userId };
 
-    const total = victories + espEntries;
+    const [victories, espEntries, affirmations, visualizations, aars, rituals] =
+      await Promise.all([
+        prisma.victory.count({ where }),
+        prisma.eSPEntry.count({ where }),
+        prisma.affirmation.count({ where }),
+        prisma.visualization.count({ where }),
+        prisma.aAR.count({ where }),
+        prisma.ritual.count({ where }),
+      ]);
 
-    let history: { date: string; cumulative: number }[] = [];
+    const account1 = victories + espEntries;
+    const account2 = affirmations;
+    const account3 = visualizations;
+    const total = account1 + account2 + account3 + aars + rituals;
+
+    let history: { date: string; cumulative: number }[] | undefined;
 
     if (withHistory) {
-      // Объединяем события в хронологическом порядке
-      const events: { date: Date }[] = [
-        ...allVictories.map((v) => ({ date: v.createdAt })),
-        ...allEsp.map((e) => ({ date: e.createdAt })),
-      ].sort((a, b) => a.date.getTime() - b.date.getTime());
+      const [allVictories, allEsp, allAffirmations, allVisualizations, allAars, allRituals] =
+        await Promise.all([
+          prisma.victory.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.eSPEntry.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.affirmation.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.visualization.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.aAR.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+          prisma.ritual.findMany({ where, select: { createdAt: true }, orderBy: { createdAt: "asc" } }),
+        ]);
 
-      // Группируем по дням и считаем cumulative
+      const events = [
+        ...allVictories,
+        ...allEsp,
+        ...allAffirmations,
+        ...allVisualizations,
+        ...allAars,
+        ...allRituals,
+      ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
       const dailyCounts: Record<string, number> = {};
       for (const event of events) {
-        const key = event.date.toISOString().split("T")[0];
+        const key = event.createdAt.toISOString().split("T")[0];
         dailyCounts[key] = (dailyCounts[key] || 0) + 1;
       }
 
       let cumulative = 0;
-      const sortedDays = Object.keys(dailyCounts).sort();
-      history = sortedDays.map((date) => {
-        cumulative += dailyCounts[date];
-        return { date, cumulative };
-      });
+      history = Object.keys(dailyCounts)
+        .sort()
+        .map((date) => {
+          cumulative += dailyCounts[date];
+          return { date, cumulative };
+        });
     }
 
     return NextResponse.json({
       total,
+      account1,
+      account2,
+      account3,
       victories,
       espEntries,
-      history: history.length > 0 ? history : undefined,
+      affirmations,
+      visualizations,
+      aars,
+      rituals,
+      history: history && history.length > 1 ? history : undefined,
     });
   } catch (error) {
     console.error("GET /api/balance error:", error);
     return NextResponse.json(
       { error: "Не удалось загрузить баланс" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getOptionalUserId } from "@/lib/auth";
 
 // GET /api/esp
-//   ?date=2025-07-25    — запись за конкретную дату
-//   ?search=keyword     — поиск по всем полям
-//   &filter=effort|success|progress — поле для поиска
-//   &limit=20&offset=0  — пагинация
-//   &calendar=2026-07    — месячный календарь (return: массив дат)
 export async function GET(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) {
+      // без пользователя возвращаем пустые данные
+      const { searchParams } = new URL(request.url);
+      if (searchParams.get("calendar")) return NextResponse.json([]);
+      if (searchParams.get("search")) return NextResponse.json({ entries: [], total: 0 });
+      return NextResponse.json([]);
+    }
+
     const { searchParams } = new URL(request.url);
     const dateStr = searchParams.get("date");
     const search = searchParams.get("search");
@@ -17,7 +22,6 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
     const calendar = searchParams.get("calendar");
 
-    // Режим календаря: возвращает список дат и количество записей за месяц
     if (calendar) {
       const [year, month] = calendar.split("-").map(Number);
       const start = new Date(Date.UTC(year, month - 1, 1));
@@ -25,20 +29,19 @@ export async function GET(request: NextRequest) {
 
       const entries = await prisma.eSPEntry.findMany({
         where: {
+          userId,
           date: { gte: start, lte: end },
         },
         select: { date: true },
         orderBy: { date: "asc" },
       });
 
-      // Возвращаем массив дат (YYYY-MM-DD), в которых есть записи
       const dates = entries.map((e) =>
         e.date.toISOString().split("T")[0]
       );
       return NextResponse.json(dates);
     }
 
-    // Поиск/фильтрация
     if (search) {
       const validFilters = ["effort", "success", "progress"];
       const fields = filter && validFilters.includes(filter)
@@ -46,6 +49,7 @@ export async function GET(request: NextRequest) {
         : validFilters;
 
       const where = {
+        userId,
         OR: fields.map((field) => ({
           [field]: { contains: search, mode: "insensitive" as const },
         })),
@@ -64,17 +68,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ entries, total });
     }
 
-    // Одна запись по дате
     if (dateStr) {
       const date = new Date(dateStr + "T00:00:00.000Z");
-      const entry = await prisma.eSPEntry.findUnique({
-        where: { date },
+      const entry = await prisma.eSPEntry.findFirst({
+        where: { userId, date },
       });
       return NextResponse.json(entry);
     }
 
-    // Все записи (по умолчанию)
     const entries = await prisma.eSPEntry.findMany({
+      where: { userId },
       orderBy: { date: "desc" },
     });
     return NextResponse.json(entries);
@@ -87,9 +90,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/esp — создать новую ESP-запись на сегодня
+// POST /api/esp
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { effort, success, progress } = body;
 
@@ -103,8 +109,8 @@ export async function POST(request: NextRequest) {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const existing = await prisma.eSPEntry.findUnique({
-      where: { date: today },
+    const existing = await prisma.eSPEntry.findFirst({
+      where: { userId, date: today },
     });
 
     if (existing) {
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
         effort: effort.trim(),
         success: success.trim(),
         progress: progress.trim(),
+        userId,
       },
     });
 
@@ -136,9 +143,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/esp — обновить существующую ESP-запись
+// PATCH /api/esp
 export async function PATCH(request: NextRequest) {
   try {
+    const userId = await getOptionalUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await request.json();
     const { id, effort, success, progress } = body;
 
@@ -155,7 +165,7 @@ export async function PATCH(request: NextRequest) {
     if (progress) data.progress = progress.trim();
 
     const entry = await prisma.eSPEntry.update({
-      where: { id },
+      where: { id, userId },
       data,
     });
 
