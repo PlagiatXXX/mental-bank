@@ -31,6 +31,7 @@ export default function Navigation() {
             return (
               <Link
                 key={item.href}
+                id={item.id}
                 href={item.href}
                 data-tour={item.id}
                 aria-current={isActive ? "page" : undefined}

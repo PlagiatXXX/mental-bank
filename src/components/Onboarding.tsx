@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const STORAGE_KEY = "mb_onboarding_done";
-const INDEX_KEY = "mb_tour_index";
 const MODAL_KEY = "mental-bank:info-modal-dismissed";
 
 interface Step {
   /** CSS-селектор элемента для подсветки */
   element?: string;
-  /** Куда перейти перед показом этого шага */
-  navigateTo?: string;
   popover: {
     title: string;
     description: string;
@@ -50,9 +47,9 @@ const ALL_STEPS: Step[] = [
       side: "bottom",
     },
   },
-  // 4 — ESP: показываем на странице ESP
+  // 4 — ESP
   {
-    navigateTo: "/esp-journal",
+    element: "#nav-esp",
     popover: {
       title: "📝 ESP-дневник",
       description:
@@ -61,7 +58,7 @@ const ALL_STEPS: Step[] = [
   },
   // 5 — Аффирмации
   {
-    navigateTo: "/account-2",
+    element: "#nav-affirmations",
     popover: {
       title: "💬 Аффирмации",
       description:
@@ -70,7 +67,7 @@ const ALL_STEPS: Step[] = [
   },
   // 6 — Визуализация
   {
-    navigateTo: "/account-3",
+    element: "#nav-visualization",
     popover: {
       title: "🎬 Визуализация",
       description:
@@ -79,7 +76,7 @@ const ALL_STEPS: Step[] = [
   },
   // 7 — Топ-10
   {
-    navigateTo: "/top-10",
+    element: "#nav-top10",
     popover: {
       title: "🏆 Топ-10 побед",
       description:
@@ -88,7 +85,7 @@ const ALL_STEPS: Step[] = [
   },
   // 8 — AAR
   {
-    navigateTo: "/aar",
+    element: "#nav-aar",
     popover: {
       title: "🔄 AAR — разбор действий",
       description:
@@ -97,7 +94,7 @@ const ALL_STEPS: Step[] = [
   },
   // 9 — Убеждения
   {
-    navigateTo: "/mindset",
+    element: "#nav-mindset",
     popover: {
       title: "🧠 Убеждения",
       description:
@@ -106,7 +103,7 @@ const ALL_STEPS: Step[] = [
   },
   // 10 — Защита уверенности
   {
-    navigateTo: "/protection",
+    element: "#nav-protection",
     popover: {
       title: "🛡️ Защита уверенности",
       description:
@@ -115,7 +112,7 @@ const ALL_STEPS: Step[] = [
   },
   // 11 — Ритуалы
   {
-    navigateTo: "/rituals",
+    element: "#nav-rituals",
     popover: {
       title: "⚡ Ритуалы",
       description:
@@ -124,7 +121,7 @@ const ALL_STEPS: Step[] = [
   },
   // 12 — C-B-A
   {
-    navigateTo: "/cba",
+    element: "#nav-cba",
     popover: {
       title: "🌬️ C-B-A / Дыхание",
       description:
@@ -133,7 +130,7 @@ const ALL_STEPS: Step[] = [
   },
   // 13 — История депозитов
   {
-    navigateTo: "/deposits",
+    element: "#nav-deposits",
     popover: {
       title: "📜 История депозитов",
       description:
@@ -142,7 +139,7 @@ const ALL_STEPS: Step[] = [
   },
   // 14 — Соцсети (на главной)
   {
-    navigateTo: "/",
+    element: "#social-links",
     popover: {
       title: "🌐 Подпишитесь",
       description:
@@ -164,10 +161,10 @@ const ALL_STEPS: Step[] = [
 export default function Onboarding() {
   const pathname = usePathname();
   const [showButton, setShowButton] = useState(false);
-  const autoStartedRef = useRef(false);
 
   const startTour = useCallback(() => {
-    const currentPath = window.location.pathname;
+    // Сбрасываем флаг завершения — тур сейчас активен
+    localStorage.removeItem(STORAGE_KEY);
 
     // Ищем первый видимый элемент среди всех, подходящих под селектор
     function findVisible(selector: string): Element | null {
@@ -179,34 +176,13 @@ export default function Onboarding() {
       return null;
     }
 
-    // Строим шаги: для каждого ALL_STEPS решаем, показывать на этой странице
-    // или сперва перейти на другую.
+    // Строим шаги: для каждого ALL_STEPS ищем элемент на текущей странице
     const steps: {
       element?: () => Element;
       popover?: { title: string; description: string; side?: string };
-      onNext?: () => false | void;
     }[] = [];
 
-    for (let i = 0; i < ALL_STEPS.length; i++) {
-      const s = ALL_STEPS[i];
-
-      // Шаг требует перехода на другую страницу
-      if (s.navigateTo && s.navigateTo !== currentPath) {
-        steps.push({
-          popover: {
-            title: s.popover.title,
-            description: s.popover.description,
-          },
-          onNext: () => {
-            localStorage.setItem(INDEX_KEY, String(i + 1));
-            window.location.href = s.navigateTo!;
-            return false;
-          },
-        });
-        continue;
-      }
-
-      // Мы на правильной странице — показываем элемент, если он есть и видим
+    for (const s of ALL_STEPS) {
       const el = s.element ? findVisible(s.element) : null;
       steps.push({
         element: el ? () => el as Element : undefined,
@@ -218,15 +194,7 @@ export default function Onboarding() {
       });
     }
 
-    // Проверяем, не продолжаем ли тур после перехода между страницами
-    const savedIndex = localStorage.getItem(INDEX_KEY);
-    let startIndex = 0;
-    if (savedIndex) {
-      startIndex = parseInt(savedIndex, 10);
-      localStorage.removeItem(INDEX_KEY);
-    }
-
-    const driverObj = driver({
+    driver({
       showProgress: true,
       nextBtnText: "Далее →",
       prevBtnText: "← Назад",
@@ -234,33 +202,18 @@ export default function Onboarding() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       steps: steps as any,
       onDestroyed: () => {
-        localStorage.removeItem(INDEX_KEY);
         localStorage.setItem(STORAGE_KEY, "true");
         setShowButton(true);
       },
-    });
-
-    driverObj.drive(startIndex);
+    }).drive(0);
   }, []);
 
-  // Автостарт после регистрации: модалка закрыта + мы на главной
+  // Автостарт: модалка закрыта + мы на главной + тур ещё не пройден
   useEffect(() => {
-    if (autoStartedRef.current) return;
-
     const modalDismissed = localStorage.getItem(MODAL_KEY) === "true";
     const tourDone = localStorage.getItem(STORAGE_KEY) === "true";
-    const savedIndex = localStorage.getItem(INDEX_KEY);
 
-    // Продолжаем тур после перехода между страницами
-    if (savedIndex !== null && !tourDone) {
-      autoStartedRef.current = true;
-      const timer = setTimeout(() => startTour(), 600);
-      return () => clearTimeout(timer);
-    }
-
-    // Первый запуск: модалка закрыта + мы на главной
     if (modalDismissed && !tourDone && pathname === "/") {
-      autoStartedRef.current = true;
       const timer = setTimeout(() => startTour(), 800);
       return () => clearTimeout(timer);
     }
