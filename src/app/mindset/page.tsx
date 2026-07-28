@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import ChapterInfo from "@/components/ChapterInfo";
+import BackToTools from "@/components/BackToTools";
 
 // ─── 3 ограничивающих убеждения ──────────────────────────────────────
 
@@ -225,6 +226,8 @@ export default function MindsetPage() {
 
   return (
     <div className="space-y-6">
+      <BackToTools />
+
       <ChapterInfo
         chapterNumber={6}
         pageTitle="🧠 Решение быть другим"

@@ -32,6 +32,7 @@ export default function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
+                data-tour={item.id}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-colors ${
                   isActive
@@ -46,6 +47,7 @@ export default function Navigation() {
           })}
           <Link
             href="/tools"
+            data-tour="nav-tools"
             aria-current={pathname.startsWith("/tools") || pathname === "/protection" || pathname === "/rituals" ? "page" : undefined}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-colors ${
               pathname === "/tools" || pathname === "/protection" || pathname === "/rituals"
@@ -92,6 +94,7 @@ export default function Navigation() {
                 key={item.href}
                 id={item.id}
                 href={item.href}
+                data-tour={item.id}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
@@ -121,6 +124,7 @@ export default function Navigation() {
                 key={item.href}
                 id={item.id}
                 href={item.href}
+                data-tour={item.id}
                 aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
@@ -141,6 +145,7 @@ export default function Navigation() {
           <Link
             id="nav-deposits"
             href="/deposits"
+            data-tour="nav-deposits"
             aria-current={pathname === "/deposits" ? "page" : undefined}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
               pathname === "/deposits"

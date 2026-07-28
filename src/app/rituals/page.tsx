@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import ChapterInfo from "@/components/ChapterInfo";
+import BackToTools from "@/components/BackToTools";
 
 interface Ritual {
   id: string;
@@ -90,10 +91,12 @@ export default function RitualsPage() {
 
   return (
     <div className="space-y-6">
+      <BackToTools />
+
       <ChapterInfo
-        chapterNumber={7}
+        chapterNumber={4}
         pageTitle="⚡ Ритуалы"
-        contextNote="Ритуал — это якорь, который сигнализирует мозгу: «пора переключиться в боевой режим». Фиксированная последовательность действий снижает тревогу и создаёт ощущение контроля."
+        contextNote="Ритуалы — это мосты между намерением и действием. Они превращают хаос в порядок, а страх — в готовность."
       />
 
       <div className="flex items-center justify-between">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import ChapterInfo from "@/components/ChapterInfo";
+import BackToTools from "@/components/BackToTools";
 
 type Phase = "center" | "breathe" | "act" | "idle";
 
@@ -98,6 +99,8 @@ export default function CBAPage() {
 
   return (
     <div className="space-y-6">
+      <BackToTools />
+
       <ChapterInfo
         chapterNumber={8}
         pageTitle="🌬️ C-B-A — Центр • Дыхание • Действие"
