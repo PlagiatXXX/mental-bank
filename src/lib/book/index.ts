@@ -37,8 +37,7 @@ export * as chapter9 from "./chapter-09-after-action-review"
 export * as epilogue from "./epilogue"
 
 // ─── Aggregated collections ───────────────────────────────────────
-import type { Rule, Exercise, Quote, Concept } from "./types"
-import { chapters } from "./chapters"
+import type { Rule, Exercise, Quote } from "./types"
 import * as c1 from "./chapter-01-first-victory"
 import * as c2 from "./chapter-02-account-past"
 import * as c3 from "./chapter-03-account-present"

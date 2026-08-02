@@ -26,7 +26,12 @@ export async function GET(request: Request) {
 
     const where = { userId };
 
-    const [victories, espEntries, affirmations, visualizations, aars, rituals, deposits] =
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setUTCHours(23, 59, 59, 999);
+
+    const [victories, espEntries, affirmations, visualizations, aars, rituals, deposits, pendingEarnings] =
       await Promise.all([
         prisma.victory.count({ where }),
         prisma.eSPEntry.count({ where }),
@@ -35,12 +40,24 @@ export async function GET(request: Request) {
         prisma.aAR.count({ where }),
         prisma.ritual.count({ where }),
         prisma.deposit.count({ where }),
+        prisma.pendingEarning.findMany({
+          where: {
+            userId,
+            confirmed: false,
+            createdAt: { gte: todayStart, lte: todayEnd },
+          },
+          select: { amount: true, source: true, createdAt: true },
+          orderBy: { createdAt: "asc" },
+        }),
       ]);
 
     const account1 = victories + espEntries;
     const account2 = affirmations;
     const account3 = visualizations;
     const total = account1 + account2 + account3 + aars + rituals + deposits;
+
+    const pendingBalance = pendingEarnings.reduce((sum, e) => sum + e.amount, 0);
+    const pendingCount = pendingEarnings.length;
 
     let history: { date: string; cumulative: number }[] | undefined;
 
@@ -93,6 +110,13 @@ export async function GET(request: Request) {
       aars,
       rituals,
       deposits,
+      pendingBalance,
+      pendingCount,
+      pendingItems: pendingEarnings.map((e) => ({
+        source: e.source,
+        amount: e.amount,
+        createdAt: e.createdAt.toISOString(),
+      })),
       history: history && history.length > 1 ? history : undefined,
     });
   } catch (error) {

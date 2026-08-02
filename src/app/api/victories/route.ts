@@ -46,15 +46,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const victory = await prisma.victory.create({
-      data: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        imageUrl: imageUrl?.trim() || null,
-        position: count + 1,
-        userId,
-      },
-    });
+    const [victory] = await prisma.$transaction([
+      prisma.victory.create({
+        data: {
+          title: title.trim(),
+          description: description?.trim() || null,
+          imageUrl: imageUrl?.trim() || null,
+          position: count + 1,
+          userId,
+        },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "victory", sourceId: null, userId },
+      }),
+    ]);
 
     return NextResponse.json(victory, { status: 201 });
   } catch (error) {

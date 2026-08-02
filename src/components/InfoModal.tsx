@@ -9,7 +9,9 @@ export default function InfoModal({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    // Синхронизация с localStorage — внешняя система (React-паттерн для эффектов)
     const dismissed = localStorage.getItem(STORAGE_KEY) === "true";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!dismissed) setOpen(true);
   }, []);
 

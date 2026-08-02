@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
@@ -39,11 +39,11 @@ const ALL_STEPS: Step[] = [
     },
   },
   {
-    element: "#deposit-form",
+    element: "#main-balance",
     popover: {
-      title: "🪙 Ежедневный депозит",
+      title: "⚗️ Вечерний ритуал",
       description:
-        "С чего начать? Прямо сейчас. Раз в день описывайте одно действие, которое заслуживает места в банке. Это может быть победа, сложный разговор, новый навык или просто 'сделал то, на что не решался'. Один депозит в день — это ритуал, который меняет мышление.",
+        "Теперь 'депозит' — это не форма с текстом, а целый ритуал. В течение дня вы выполняете задания (победы, ESP, аффирмации, визуализации), и они копятся в 'Pending Balance'. Вечером одним нажатием вы вливаете всё в колбу — зелёная жидкость поднимается строго пропорционально сумме. Это создаёт ощущение завершённости дня.",
       side: "bottom",
     },
   },
@@ -161,6 +161,7 @@ const ALL_STEPS: Step[] = [
 export default function Onboarding() {
   const pathname = usePathname();
   const [showButton, setShowButton] = useState(false);
+  const driverRef = useRef<{ destroy: () => void } | null>(null);
 
   const startTour = useCallback(() => {
     // Сбрасываем флаг завершения — тур сейчас активен
@@ -194,7 +195,7 @@ export default function Onboarding() {
       });
     }
 
-    driver({
+    const d = driver({
       showProgress: true,
       nextBtnText: "Далее →",
       prevBtnText: "← Назад",
@@ -204,8 +205,11 @@ export default function Onboarding() {
       onDestroyed: () => {
         localStorage.setItem(STORAGE_KEY, "true");
         setShowButton(true);
+        driverRef.current = null;
       },
-    }).drive(0);
+    });
+    driverRef.current = d;
+    d.drive(0);
   }, []);
 
   // Автостарт: модалка закрыта + мы на главной + тур ещё не пройден
@@ -218,8 +222,20 @@ export default function Onboarding() {
       return () => clearTimeout(timer);
     }
 
-    if (tourDone) setShowButton(true);
+    if (tourDone) {
+      // Синхронизация с localStorage — внешняя система
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowButton(true);
+    }
   }, [pathname, startTour]);
+
+  // При уходе со страницы (или размонтировании) завершаем тур и ставим флаг,
+  // чтобы он не автостартовал при каждом заходе на главную.
+  useEffect(() => {
+    return () => {
+      driverRef.current?.destroy();
+    };
+  }, []);
 
   if (!showButton) return null;
 

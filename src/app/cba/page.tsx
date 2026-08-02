@@ -37,7 +37,7 @@ const phaseData: Record<
 export default function CBAPage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [timer, setTimer] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopTimer = useCallback(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import SocialLinks from "./SocialLinks";
 import DonateBlock from "./DonateBlock";
@@ -32,7 +33,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-flex items-center gap-2">
-              <img
+              <Image
                 src="/logo/logo-96x96.webp"
                 alt=""
                 width={32}

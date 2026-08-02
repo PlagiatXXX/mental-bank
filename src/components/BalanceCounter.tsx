@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
 import GrowthChart from "./GrowthChart";
 
 interface GrowthPoint {
@@ -21,21 +20,20 @@ export default function BalanceCounter() {
   const [animatedTotal, setAnimatedTotal] = useState(0);
   const animationDoneRef = useRef(false);
 
-  const fetchBalance = useCallback(async () => {
-    try {
-      const res = await fetch("/api/balance?history=true");
-      if (res.ok) {
-        const data = await res.json();
-        setBalance(data);
-      }
-    } catch {
-      // silently fail
-    }
-  }, []);
-
   useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
+    let cancelled = false;
+    fetch("/api/balance?history=true")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setBalance(data);
+      })
+      .catch(() => {
+        // silently fail
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Анимация счета через requestAnimationFrame с easeOutCubic
   useEffect(() => {

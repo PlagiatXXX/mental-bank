@@ -77,6 +77,7 @@ export async function DELETE() {
       prisma.ritual.deleteMany({ where: { userId } }),
       prisma.aAR.deleteMany({ where: { userId } }),
       prisma.deposit.deleteMany({ where: { userId } }),
+      prisma.pendingEarning.deleteMany({ where: { userId } }),
       prisma.user.delete({ where: { id: userId } }),
     ]);
 

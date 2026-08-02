@@ -2,7 +2,6 @@
  * Функции валидации пользовательского ввода по правилам из книги.
  * Используются для обратной связи в реальном времени.
  */
-import { allRules } from "./book"
 
 /**
  * Проверка аффирмации по 5 правилам из Главы 3.
@@ -86,7 +85,6 @@ export function assessAARBalance(
   score: number
   feedback: string
 } {
-  const totalLength = whatHappened.length + soWhat.length + nowWhat.length
   const positiveRatio =
     (whatHappened.match(/хорошо|успех|получилось|здорово|молодец/i)?.length ??
       0) /

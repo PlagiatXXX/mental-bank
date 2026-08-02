@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import ChapterInfo from "@/components/ChapterInfo";
 import BackToTools from "@/components/BackToTools";
 
@@ -192,10 +191,6 @@ export default function MindsetPage() {
   };
 
   // ── Mode switch logic ──
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === "improvement" ? "demonstration" : "improvement"));
-  };
 
   const startModeTimer = () => {
     setModeTimer(30 * 60); // 30 minutes

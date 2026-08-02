@@ -37,8 +37,22 @@ export default function VisualizationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchVisualizations();
-  }, [fetchVisualizations]);
+    let cancelled = false;
+    fetch("/api/visualizations")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setVisualizations(data);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import GrowthChart from "@/components/GrowthChart";
-import CoinFly from "@/components/CoinFly";
-import DepositStreak, { bumpStreak } from "@/components/DepositStreak";
+import FlaskViewer from "@/components/FlaskViewer";
 import { getRandomQuote } from "@/lib/quotes";
 
 interface BalanceData {
@@ -19,33 +19,27 @@ interface BalanceData {
   aars: number;
   rituals: number;
   deposits: number;
+  pendingBalance: number;
+  pendingCount: number;
+  pendingItems: { source: string; amount: number; createdAt: string }[];
   history?: { date: string; cumulative: number }[];
 }
+
+const SOURCE_LABELS: Record<string, { label: string; icon: string }> = {
+  victory: { label: "Победа", icon: "🏆" },
+  esp: { label: "ESP-запись", icon: "📝" },
+  affirmation: { label: "Аффирмация", icon: "💬" },
+  visualization: { label: "Визуализация", icon: "🎬" },
+  aar: { label: "AAR", icon: "📋" },
+  ritual: { label: "Ритуал", icon: "🔥" },
+  deposit: { label: "Депозит", icon: "🪙" },
+};
 
 export default function Dashboard() {
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [animatedTotal, setAnimatedTotal] = useState(0);
-  const [bumping, setBumping] = useState(false);
-
-  // Deposit form
-  const [text, setText] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [todayDeposit, setTodayDeposit] = useState<{ id: string; text: string; createdAt: string } | null>(null);
-  const [depositDone, setDepositDone] = useState(false);
-
-  // Coin animation
-  const [coin, setCoin] = useState<{
-    from: { x: number; y: number };
-    to: { x: number; y: number };
-  } | null>(null);
-
-  // Quote
   const [quote, setQuote] = useState<{ text: string; author: string } | null>(null);
-
-  // Refs for positions
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const balanceRef = useRef<HTMLDivElement>(null);
-  const bumpCountRef = useRef(0);
+  const [confirming, setConfirming] = useState(false);
 
   const fetchBalance = useCallback(async () => {
     try {
@@ -60,20 +54,21 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetchBalance();
-    // Проверяем, был ли сегодня депозит
-    fetch("/api/deposits?today=true")
-      .then((r) => r.json())
+    let cancelled = false;
+    fetch("/api/balance?history=true")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data) => {
-        if (data.today) {
-          setTodayDeposit(data.today);
-          setDepositDone(true);
-        }
+        if (!cancelled) setBalance(data);
       })
-      .catch(() => {});
-  }, [fetchBalance]);
+      .catch(() => {
+        // silently fail
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  // Animate counter
+  // Animated counter
   useEffect(() => {
     if (!balance) return;
     const target = balance.total;
@@ -89,210 +84,133 @@ export default function Dashboard() {
       }
     }, 30);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [balance]);
 
-  const handleDeposit = async () => {
-    const trimmed = text.trim();
-    if (!trimmed || depositDone) return;
-
-    setSaving(true);
-
+  const handleConfirmDay = async () => {
+    setConfirming(true);
     try {
-      const res = await fetch("/api/deposits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: trimmed }),
-      });
-
-      if (res.status === 409) {
-        // Уже депозит сегодня — обновляем UI
-        setDepositDone(true);
-        setSaving(false);
-        return;
+      const res = await fetch("/api/confirm-day", { method: "POST" });
+      if (res.ok) {
+        // Показываем цитату после подтверждения
+        setQuote(getRandomQuote());
+        // Обновляем баланс
+        await fetchBalance();
       }
-
-      if (!res.ok) return;
-
-      const deposit = await res.json();
-      setTodayDeposit(deposit);
-      setDepositDone(true);
-
-      // Запускаем анимацию монеты
-      const btnRect = buttonRef.current?.getBoundingClientRect();
-      const balRect = balanceRef.current?.getBoundingClientRect();
-      if (btnRect && balRect) {
-        const from = {
-          x: btnRect.left + btnRect.width / 2 - 20,
-          y: btnRect.top - 10,
-        };
-        const to = {
-          x: balRect.left + balRect.width / 2 - 20,
-          y: balRect.top + balRect.height / 2 - 20,
-        };
-        setCoin({ from, to });
-      }
-
-      // Обновляем streak
-      bumpStreak();
-
-      // Выбираем цитату
-      setQuote(getRandomQuote());
-
-      setText("");
     } catch {
       // ignore
     } finally {
-      setSaving(false);
+      setConfirming(false);
     }
-  };
-
-  const onCoinFinish = () => {
-    setCoin(null);
-    // Вспышка баланса
-    setBumping(true);
-    bumpCountRef.current += 1;
-    const count = bumpCountRef.current;
-    setTimeout(() => {
-      // только если не было нового бампа
-      if (bumpCountRef.current === count) setBumping(false);
-    }, 500);
-    // Перезапрашиваем баланс
-    fetchBalance();
   };
 
   if (!balance) {
     return (
       <div className="glass-card rounded-2xl p-8 text-center">
-        <div className="animate-pulse text-slate-600">Загрузка баланса…</div>
+        <div className="animate-pulse text-slate-600">Загрузка…</div>
       </div>
     );
   }
 
-  const accounts = [
-    {
-      key: "account1" as const,
-      label: "Счёт №1 — Прошлое",
-      value: balance.account1,
-      sub: `${balance.victories} побед • ${balance.espEntries} ESP • ${balance.deposits} депозитов`,
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-      icon: "📖",
-      href: "/esp-journal",
-    },
-    {
-      key: "account2" as const,
-      label: "Счёт №2 — Настоящее",
-      value: balance.affirmations,
-      sub: `${balance.affirmations} аффирмаций`,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
-      icon: "💬",
-      href: "/account-2",
-    },
-    {
-      key: "account3" as const,
-      label: "Счёт №3 — Будущее",
-      value: balance.visualizations,
-      sub: `${balance.visualizations} сценариев`,
-      color: "text-sky-400",
-      bg: "bg-sky-500/10",
-      icon: "🎬",
-      href: "/account-3",
-    },
-  ];
+  const items = balance.pendingItems ?? [];
+
+  // Сортируем по времени (от новых к старым) — уже отсортировано ASC из API, разворачиваем
+  const sortedItems = [...items].reverse();
 
   return (
     <div className="space-y-6">
-      {/* Coin animation */}
-      {coin && <CoinFly from={coin.from} to={coin.to} onFinish={onCoinFinish} />}
+      {/* Колба с подтверждением дня — вне карточки, парит на фоне */}
+      <FlaskViewer
+        pendingBalance={balance.pendingBalance}
+        pendingCount={balance.pendingCount}
+        totalBalance={balance.total}
+        onConfirm={handleConfirmDay}
+        disabled={confirming}
+      />
 
-      {/* Main balance */}
-      <div id="main-balance" className="glass-card rounded-2xl p-6 text-center">
-        <div
-          ref={balanceRef}
-          className={`mb-2 flex items-center justify-center gap-3 ${bumping ? "animate-balance-bump" : ""}`}
-        >
-          <div className="flex h-16 w-16 items-center justify-center rounded-full coin-glow bg-gradient-to-br from-amber-400 to-amber-600">
-            <img
-              src="/logo/logo-96x96.webp"
-              alt=""
-              width={48}
-              height={48}
-              className="h-12 w-12"
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-3">
-          <div
-            className={`text-5xl font-bold tracking-tight text-amber-400 tabular-nums ${bumping ? "animate-balance-bump" : ""}`}
-          >
-            {animatedTotal.toLocaleString()}
-          </div>
-          <DepositStreak />
-        </div>
-        <p className="mb-1 mt-1 text-sm font-medium uppercase tracking-widest text-slate-400">
+      {/* Общий баланс */}
+      <div
+        id="main-balance"
+        className="glass-card rounded-2xl px-4 py-6 text-center sm:px-6 sm:py-8"
+      >
+        <div className="text-xs uppercase tracking-widest text-slate-500">
           Общий ментальный баланс
-        </p>
-        <p className="text-xs italic text-emerald-500">
+        </div>
+        <div className="text-4xl font-bold tracking-tight text-emerald-400 tabular-nums sm:text-5xl">
+          {animatedTotal.toLocaleString()}
+        </div>
+        <p className="mt-1 text-[10px] italic text-slate-600">
           ↑ Только депозиты. Списаний нет.
         </p>
       </div>
 
-      {/* Deposit form */}
-      <div id="deposit-form" className="glass-card rounded-2xl p-5">
-        {depositDone && todayDeposit ? (
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-lg">
-              ✅
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-emerald-400">
-                Депозит на сегодня внесён
-              </div>
-              <p className="truncate text-xs text-slate-500">
-                &laquo;{todayDeposit.text}&raquo;
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <h3 className="mb-1 text-sm font-semibold text-slate-200">
-              🪙 Что вы сделали сегодня?
-            </h3>
-            <p className="mb-3 text-xs text-slate-500">
-              Одно действие в день — осознанный ритуал. Опишите его, чтобы закрепить в подсознании.
-            </p>
+      {/* Сводка действий за день */}
+      {sortedItems.length > 0 && (
+        <div className="glass-card rounded-2xl px-4 py-5 sm:px-6">
+          <h3 className="mb-3 text-sm font-semibold text-slate-300">
+            📋 Сегодня сделано
+          </h3>
+          <ul className="space-y-2">
+            <AnimatePresence>
+              {sortedItems.map((item, i) => {
+                const info = SOURCE_LABELS[item.source] ?? {
+                  label: item.source,
+                  icon: "•",
+                };
+                const timeAgo = getTimeAgo(item.createdAt);
+                return (
+                  <motion.li
+                    key={item.createdAt + item.source + i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-3 rounded-xl bg-slate-800/30 px-3 py-2"
+                  >
+                    <span className="text-lg">{info.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm text-slate-200">
+                        {info.label}
+                      </div>
+                      <div className="text-[10px] text-slate-600">{timeAgo}</div>
+                    </div>
+                    <span className="text-xs font-bold text-amber-400 tabular-nums">
+                      +{item.amount}
+                    </span>
+                  </motion.li>
+                );
+              })}
+            </AnimatePresence>
+          </ul>
+        </div>
+      )}
 
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Например: провёл встречу по проекту Бустрата, на которую не решался неделю…"
-              className="mb-3 w-full rounded-xl border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-              rows={3}
-              maxLength={500}
-            />
+      {/* Нет действий сегодня */}
+      {sortedItems.length === 0 && (
+        <div className="glass-card rounded-2xl px-4 py-5 text-center sm:px-6">
+          <div className="text-lg">🌅</div>
+          <p className="mt-2 text-sm text-slate-500">
+            Сегодня ещё не было действий.
+          </p>
+          <Link
+            href="/tools"
+            className="mt-3 inline-block rounded-xl bg-amber-500/10 px-5 py-2 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
+          >
+            🚀 Сделать первый шаг
+          </Link>
+        </div>
+      )}
 
-            <button
-              ref={buttonRef}
-              onClick={handleDeposit}
-              disabled={saving || !text.trim()}
-              className="gold-glow w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4 text-sm font-bold tracking-wider text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500 disabled:opacity-50"
-            >
-              {saving ? "Чеканим монету…" : "🪙  ВНЕСТИ ДЕПОЗИТ"}
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Quote after deposit */}
+      {/* Цитата после подтверждения */}
       {quote && (
-        <div className="animate-modal-in glass-card rounded-2xl border-l-4 border-amber-500/50 p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="animate-modal-in glass-card rounded-2xl border-l-4 border-amber-500/50 p-5"
+        >
           <p className="text-sm leading-relaxed italic text-slate-300">
             &laquo;{quote.text}&raquo;
           </p>
           <p className="mt-2 text-xs text-slate-500">— {quote.author}</p>
-        </div>
+        </motion.div>
       )}
 
       {/* Growth chart */}
@@ -300,7 +218,38 @@ export default function Dashboard() {
 
       {/* 3 account cards */}
       <div id="account-cards" className="grid gap-4 sm:grid-cols-3">
-        {accounts.map((acc) => (
+        {([
+          {
+            key: "account1" as const,
+            label: "Счёт №1 — Прошлое",
+            value: balance.account1,
+            sub: `${balance.victories} побед • ${balance.espEntries} ESP • ${balance.deposits} депозитов`,
+            color: "text-amber-400",
+            bg: "bg-amber-500/10",
+            icon: "📖",
+            href: "/esp-journal",
+          },
+          {
+            key: "account2" as const,
+            label: "Счёт №2 — Настоящее",
+            value: balance.affirmations,
+            sub: `${balance.affirmations} аффирмаций`,
+            color: "text-emerald-400",
+            bg: "bg-emerald-500/10",
+            icon: "💬",
+            href: "/account-2",
+          },
+          {
+            key: "account3" as const,
+            label: "Счёт №3 — Будущее",
+            value: balance.visualizations,
+            sub: `${balance.visualizations} сценариев`,
+            color: "text-sky-400",
+            bg: "bg-sky-500/10",
+            icon: "🎬",
+            href: "/account-3",
+          },
+        ] as const).map((acc) => (
           <Link
             key={acc.key}
             id={acc.key}
@@ -320,4 +269,20 @@ export default function Dashboard() {
       </div>
     </div>
   );
+}
+
+function getTimeAgo(isoString: string): string {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffMs = now - then;
+  const mins = Math.floor(diffMs / 60000);
+
+  if (mins < 1) return "только что";
+  if (mins < 60) return `${mins} мин. назад`;
+
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} ч. назад`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} дн. назад`;
 }

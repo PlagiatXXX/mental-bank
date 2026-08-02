@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import UserMenu from "./UserMenu";
 
@@ -14,22 +15,26 @@ export default function AppHeader() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    if (pathname === "/welcome") return;
+  const refreshUser = useCallback(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => {
         if (data.user) setUser(data.user);
       })
       .catch(() => {});
-  }, [pathname]);
+  }, []);
+
+  useEffect(() => {
+    if (pathname === "/welcome") return;
+    refreshUser();
+  }, [pathname, refreshUser]);
 
   if (pathname === "/welcome") return null;
 
   return (
     <div id="app-header" className="mb-6">
       <div className="flex items-center gap-2">
-        <img
+        <Image
           src="/logo/logo-96x96.webp"
           alt=""
           width={40}
@@ -44,7 +49,7 @@ export default function AppHeader() {
             Только депозиты. Никаких списаний.
           </p>
         </div>
-        {user && <UserMenu user={user} />}
+        {user && <UserMenu user={user} onSaved={refreshUser} />}
       </div>
     </div>
   );

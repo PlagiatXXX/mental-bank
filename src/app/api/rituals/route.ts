@@ -35,9 +35,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const ritual = await prisma.ritual.create({
-      data: { name: name.trim(), steps: JSON.stringify(steps), userId },
-    });
+    const [ritual] = await prisma.$transaction([
+      prisma.ritual.create({
+        data: { name: name.trim(), steps: JSON.stringify(steps), userId },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "ritual", sourceId: null, userId },
+      }),
+    ]);
     return NextResponse.json(ritual, { status: 201 });
   } catch {
     return NextResponse.json(

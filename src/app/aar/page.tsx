@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { assessAARBalance } from "@/lib/validation";
 import ChapterInfo from "@/components/ChapterInfo";
 
 interface AAR {
@@ -43,8 +42,22 @@ export default function AARPage() {
   }, []);
 
   useEffect(() => {
-    fetchAars();
-  }, [fetchAars]);
+    let cancelled = false;
+    fetch("/api/aar")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setAars(data);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

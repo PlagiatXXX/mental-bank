@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 interface ESPCalendarProps {
   onSelectDate: (date: string) => void;
@@ -15,24 +15,24 @@ export default function ESPCalendar({ onSelectDate, selectedDate }: ESPCalendarP
   const [entryDates, setEntryDates] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCalendar = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const key = `${year}-${String(month).padStart(2, "0")}`;
-      const res = await fetch(`/api/esp?calendar=${key}`);
-      if (res.ok) {
-        setEntryDates(await res.json());
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setIsLoading(false);
-    }
-  }, [year, month]);
-
   useEffect(() => {
-    fetchCalendar();
-  }, [fetchCalendar]);
+    let cancelled = false;
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    fetch(`/api/esp?calendar=${key}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((dates) => {
+        if (!cancelled) setEntryDates(dates);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [year, month]);
 
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay(); // 0=Sun

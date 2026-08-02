@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 interface ESPData {
   id?: string;
@@ -31,29 +31,28 @@ export default function ESPForm() {
   const [progress, setProgress] = useState("");
   const [aiLoading, setAiLoading] = useState<string | null>(null); // id поля, которое загружается
 
-  const fetchToday = useCallback(async () => {
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      const res = await fetch(`/api/esp?date=${today}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          setTodayEntry(data);
-          setEffort(data.effort);
-          setSuccess(data.success);
-          setProgress(data.progress);
-        }
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchToday();
-  }, [fetchToday]);
+    let cancelled = false;
+    const today = new Date().toISOString().split("T")[0];
+    fetch(`/api/esp?date=${today}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (cancelled || !data) return;
+        setTodayEntry(data);
+        setEffort(data.effort);
+        setSuccess(data.success);
+        setProgress(data.progress);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

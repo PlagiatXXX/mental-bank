@@ -23,6 +23,7 @@ model User {
   rituals            Ritual[]
   aars               AAR[]
   deposits           Deposit[]
+  pendingEarnings    PendingEarning[]
 
   @@map("users")
 }
@@ -138,6 +139,25 @@ model Ritual {
 
   @@map("rituals")
   @@index([userId])
+}
+
+/// Неподтверждённые заработки за день — «Pending Balance»
+/// Создаётся при каждом действии (victory, esp, deposit, и т.д.),
+/// подтверждается массово вечерним ритуалом на главной странице.
+model PendingEarning {
+  id          String    @id @default(cuid())
+  amount      Int       @default(1)
+  source      String    // тип: "victory" | "esp" | "affirmation" | "visualization" | "aar" | "ritual" | "deposit"
+  sourceId    String?   // опциональная ссылка на исходную запись
+  confirmed   Boolean   @default(false)
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("pending_earnings")
+  @@index([userId, confirmed, createdAt])
 }
 
 /// AAR — After Action Review, Глава 9

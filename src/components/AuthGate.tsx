@@ -11,10 +11,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const isWelcome = pathname === "/welcome";
 
   useEffect(() => {
-    if (isWelcome) {
-      setLoading(false);
-      return;
-    }
+    if (isWelcome) return;
 
     let cancelled = false;
 
@@ -40,7 +37,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, [isWelcome, router]);
 
-  if (loading) {
+  if (loading && !isWelcome) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="animate-pulse text-sm text-slate-500">Загрузка…</div>

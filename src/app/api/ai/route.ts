@@ -19,10 +19,6 @@ interface RequestBody {
   field?: "effort" | "success" | "progress";
 }
 
-interface StubResponse {
-  suggestion: string;
-}
-
 // Примеры ответов для заглушки
 const STUB_SUGGESTIONS: Record<string, string[]> = {
   effort: [

@@ -53,8 +53,22 @@ export default function VictoryPoster() {
   }, []);
 
   useEffect(() => {
-    fetchVictories();
-  }, [fetchVictories]);
+    let cancelled = false;
+    fetch("/api/victories")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setVictories(data);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Блокировка скролла при открытой модалке
   useEffect(() => {

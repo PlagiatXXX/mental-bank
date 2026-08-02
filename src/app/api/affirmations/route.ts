@@ -35,9 +35,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const affirmation = await prisma.affirmation.create({
-      data: { text: text.trim(), context: context?.trim() || null, userId },
-    });
+    const [affirmation] = await prisma.$transaction([
+      prisma.affirmation.create({
+        data: { text: text.trim(), context: context?.trim() || null, userId },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "affirmation", sourceId: null, userId },
+      }),
+    ]);
     return NextResponse.json(affirmation, { status: 201 });
   } catch {
     return NextResponse.json(

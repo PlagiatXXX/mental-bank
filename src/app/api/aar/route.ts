@@ -37,17 +37,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const aar = await prisma.aAR.create({
-      data: {
-        eventTitle: eventTitle.trim(),
-        whatHappened: whatHappened?.trim() || null,
-        soWhat: soWhat?.trim() || null,
-        nowWhat: nowWhat?.trim() || null,
-        balanceType: balanceType || "loss",
-        lessons: lessons ? JSON.stringify(lessons) : null,
-        userId,
-      },
-    });
+    const [aar] = await prisma.$transaction([
+      prisma.aAR.create({
+        data: {
+          eventTitle: eventTitle.trim(),
+          whatHappened: whatHappened?.trim() || null,
+          soWhat: soWhat?.trim() || null,
+          nowWhat: nowWhat?.trim() || null,
+          balanceType: balanceType || "loss",
+          lessons: lessons ? JSON.stringify(lessons) : null,
+          userId,
+        },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "aar", sourceId: null, userId },
+      }),
+    ]);
     return NextResponse.json(aar, { status: 201 });
   } catch {
     return NextResponse.json(

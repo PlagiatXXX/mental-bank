@@ -23,8 +23,6 @@ export default function RitualsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm());
   const [isSaving, setIsSaving] = useState(false);
-  const [activeRitual, setActiveRitual] = useState<Ritual | null>(null);
-  const [currentRitualStep, setCurrentRitualStep] = useState(0);
 
   const fetchRituals = useCallback(async () => {
     try {
@@ -38,8 +36,22 @@ export default function RitualsPage() {
   }, []);
 
   useEffect(() => {
-    fetchRituals();
-  }, [fetchRituals]);
+    let cancelled = false;
+    fetch("/api/rituals")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setRituals(data);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const addStep = () => {
     if (form.currentStep.trim()) {

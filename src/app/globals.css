@@ -102,33 +102,7 @@ body {
   animation: countUp 0.6s ease-out forwards;
 }
 
-/* Coin fly animation — парабола для монеты */
-@keyframes coinFly {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-}
 
-.animate-coin-fly {
-  animation: coinFly var(--fly-duration, 600ms) ease-in forwards;
-}
-
-/* Balance bump — вспышка при пополнении */
-@keyframes balanceBump {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.12); }
-  60% { transform: scale(0.97); }
-  100% { transform: scale(1); }
-}
-
-.animate-balance-bump {
-  animation: balanceBump 0.4s ease-out;
-}
 
 /* Glass card effect */
 .glass-card {

@@ -15,12 +15,6 @@ interface SearchResult {
   total: number;
 }
 
-const FILTER_LABELS: Record<string, string> = {
-  effort: "E",
-  success: "S",
-  progress: "P",
-};
-
 const filterOptions = [
   { value: "", label: "Все поля" },
   { value: "effort", label: "E — Усилие" },
@@ -68,8 +62,35 @@ export default function ESPHistory() {
   }, [search, filter, limit, offset]);
 
   useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+    let cancelled = false;
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (filter) params.set("filter", filter);
+    params.set("limit", String(limit));
+    params.set("offset", String(offset));
+    const url = `/api/esp?${params.toString()}`;
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((result) => {
+        if (cancelled) return;
+        if (search || filter) {
+          setData(result.entries);
+          setTotal(result.total);
+        } else {
+          setData(result);
+          setTotal(result.length);
+        }
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [search, filter, limit, offset]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

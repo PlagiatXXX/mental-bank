@@ -4,7 +4,7 @@ import { setUserIdCookie } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const { nickname } = await request.json();
+    const { nickname, avatar } = await request.json();
 
     if (!nickname || typeof nickname !== "string" || nickname.trim().length === 0) {
       return NextResponse.json(
@@ -15,9 +15,12 @@ export async function POST(request: Request) {
 
     const trimmed = nickname.trim().slice(0, 30);
 
-    const user = await prisma.user.create({
-      data: { nickname: trimmed },
-    });
+    const data: { nickname: string; avatar?: string } = { nickname: trimmed };
+    if (typeof avatar === "string" && avatar.trim().length > 0) {
+      data.avatar = avatar.trim().slice(0, 8);
+    }
+
+    const user = await prisma.user.create({ data });
 
     await setUserIdCookie(user.id);
 

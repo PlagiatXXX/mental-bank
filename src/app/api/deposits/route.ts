@@ -82,12 +82,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const deposit = await prisma.deposit.create({
-      data: {
-        text: text.trim().slice(0, 500),
-        userId,
-      },
-    });
+    const [deposit] = await prisma.$transaction([
+      prisma.deposit.create({
+        data: {
+          text: text.trim().slice(0, 500),
+          userId,
+        },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "deposit", sourceId: null, userId },
+      }),
+    ]);
 
     return NextResponse.json(deposit, { status: 201 });
   } catch (error) {

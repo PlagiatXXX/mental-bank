@@ -32,8 +32,22 @@ export default function AffirmationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchAffirmations();
-  }, [fetchAffirmations]);
+    let cancelled = false;
+    fetch("/api/affirmations")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (!cancelled) setAffirmations(data);
+      })
+      .catch(() => {
+        // silently fail
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const validation = text.trim() ? validateAffirmation(text) : null;
 

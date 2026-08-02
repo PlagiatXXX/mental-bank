@@ -123,15 +123,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const entry = await prisma.eSPEntry.create({
-      data: {
-        date: today,
-        effort: effort.trim(),
-        success: success.trim(),
-        progress: progress.trim(),
-        userId,
-      },
-    });
+    const [entry] = await prisma.$transaction([
+      prisma.eSPEntry.create({
+        data: {
+          date: today,
+          effort: effort.trim(),
+          success: success.trim(),
+          progress: progress.trim(),
+          userId,
+        },
+      }),
+      prisma.pendingEarning.create({
+        data: { source: "esp", sourceId: null, userId },
+      }),
+    ]);
 
     return NextResponse.json(entry, { status: 201 });
   } catch (error) {

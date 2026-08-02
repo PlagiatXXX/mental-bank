@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const navItems = [
@@ -69,7 +70,7 @@ export default function Navigation() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 border-b border-slate-700/50 px-5 py-5">
-          <img
+          <Image
             src="/logo/logo-96x96.webp"
             alt=""
             width={48}

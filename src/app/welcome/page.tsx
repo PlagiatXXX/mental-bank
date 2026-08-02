@@ -26,7 +26,7 @@ export default function WelcomePage() {
       const res = await fetch("/api/auth/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname: trimmed }),
+        body: JSON.stringify({ nickname: trimmed, avatar }),
       });
 
       if (!res.ok) {
