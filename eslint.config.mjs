@@ -24,6 +24,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Сгенерированный Serwist service worker — не редактируется руками.
     "public/sw.js",
+    // Android-проект: скопированные web-ассеты и сгенерированный код
+    // (Capacitor) не редактируются руками.
+    "android/**",
   ]),
 ]);
 

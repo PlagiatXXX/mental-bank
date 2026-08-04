@@ -3,20 +3,20 @@ import withSerwistInit from "@serwist/next";
 
 const PAGE_ROUTES = [
   "/",
-  "/aar",
-  "/account-2",
-  "/account-3",
-  "/cba",
-  "/deposits",
-  "/esp-journal",
-  "/mindset",
-  "/offline",
-  "/privacy",
-  "/protection",
-  "/rituals",
-  "/tools",
-  "/top-10",
-  "/welcome",
+  "/aar/",
+  "/account-2/",
+  "/account-3/",
+  "/cba/",
+  "/deposits/",
+  "/esp-journal/",
+  "/mindset/",
+  "/offline/",
+  "/privacy/",
+  "/protection/",
+  "/rituals/",
+  "/tools/",
+  "/top-10/",
+  "/welcome/",
 ];
 
 const withSerwist = withSerwistInit({
@@ -40,6 +40,9 @@ const nextConfig: NextConfig = {
   // Статический экспорт: приложение полностью живёт в браузере (localStorage),
   // сервер не нужен — ни для API, ни для данных.
   output: "export",
+  // Каждая страница — директория с index.html (/esp-journal → /esp-journal/),
+  // чтобы прямые переходы по URL работали в Capacitor WebView.
+  trailingSlash: true,
 };
 
 export default withSerwist(nextConfig);
