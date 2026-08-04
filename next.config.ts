@@ -40,6 +40,9 @@ const nextConfig: NextConfig = {
   // Статический экспорт: приложение полностью живёт в браузере (localStorage),
   // сервер не нужен — ни для API, ни для данных.
   output: "export",
+  // next/image не может оптимизировать картинки в статическом экспорте
+  // (нет сервера /_next/image) — отдаём оригиналы как есть.
+  images: { unoptimized: true },
   // Каждая страница — директория с index.html (/esp-journal → /esp-journal/),
   // чтобы прямые переходы по URL работали в Capacitor WebView.
   trailingSlash: true,
