@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -15,9 +16,24 @@ const navItems = [
 
 export default function Navigation() {
   const pathname = usePathname();
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  // Не показываем навигацию на странице приветствия
-  if (pathname === "/welcome") return null;
+  useEffect(() => {
+    if (!pathname || pathname === "/welcome" || pathname === "/welcome/") {
+      return;
+    }
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) setUser(data.user);
+      })
+      .catch(() => {})
+      .finally(() => setChecked(true));
+  }, [pathname]);
+
+  // Не показываем навигацию на странице приветствия или до проверки авторизации
+  if (!pathname || pathname === "/welcome" || pathname === "/welcome/" || !checked || !user) return null;
 
   // Mobile: показываем первые 5, остальное в "ещё"
   const mobileItems = navItems.slice(0, 5);
@@ -26,7 +42,7 @@ export default function Navigation() {
     <>
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-700/80 bg-slate-900/95 backdrop-blur-lg lg:hidden pb-safe">
-        <div className="mx-auto flex max-w-lg justify-around py-3">
+        <div className="mx-auto flex max-w-lg justify-between px-1 py-3">
           {mobileItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -36,14 +52,14 @@ export default function Navigation() {
                 href={item.href}
                 data-tour={item.id}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-colors ${
+                className={`flex flex-1 flex-col items-center gap-0.5 py-1 text-[11px] font-medium transition-colors ${
                   isActive
                     ? "text-amber-400"
                     : "text-slate-500 hover:text-slate-300"
                 }`}
               >
                 <span className="text-lg" aria-hidden="true">{item.icon}</span>
-                <span className="whitespace-nowrap">{item.mobileLabel}</span>
+                <span className="truncate">{item.mobileLabel}</span>
               </Link>
             );
           })}
@@ -51,14 +67,14 @@ export default function Navigation() {
             href="/tools"
             data-tour="nav-tools"
             aria-current={pathname.startsWith("/tools") || pathname === "/protection" || pathname === "/rituals" ? "page" : undefined}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-colors ${
+            className={`flex flex-1 flex-col items-center gap-0.5 py-1 text-[11px] font-medium transition-colors ${
               pathname === "/tools" || pathname === "/protection" || pathname === "/rituals"
                 ? "text-amber-400"
                 : "text-slate-500 hover:text-slate-300"
             }`}
           >
             <span className="text-lg" aria-hidden="true">⚡</span>
-            <span className="whitespace-nowrap">Инструменты</span>
+            <span className="truncate">Инструменты</span>
           </Link>
         </div>
       </nav>

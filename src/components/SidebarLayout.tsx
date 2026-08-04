@@ -15,7 +15,7 @@ export default function SidebarLayout({
   const pathname = usePathname();
 
   // На странице приветствия нет sidebar'а — отступ не нужен
-  if (pathname === "/welcome") return <>{children}</>;
+  if (!pathname || pathname === "/welcome" || pathname === "/welcome/") return <>{children}</>;
 
   return <div className="sidebar-offset">{children}</div>;
 }

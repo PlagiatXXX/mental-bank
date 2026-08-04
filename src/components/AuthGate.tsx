@@ -8,7 +8,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
 
-  const isWelcome = pathname === "/welcome";
+  const isWelcome = !pathname || pathname === "/welcome" || pathname === "/welcome/";
 
   useEffect(() => {
     if (isWelcome) return;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -24,7 +25,19 @@ const toolLinks = [
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === "/welcome") return null;
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (!pathname || pathname === "/welcome" || pathname === "/welcome/") return;
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) setAuthorized(true);
+      })
+      .catch(() => {});
+  }, [pathname]);
+
+  if (!pathname || pathname === "/welcome" || pathname === "/welcome/" || !authorized) return null;
 
   return (
     <footer className="border-t border-slate-800 bg-slate-900/50 pb-24 lg:pb-0">
@@ -95,8 +108,21 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Bookstrata promo — перед разделителем */}
+        <p className="mt-8 text-center text-xs text-slate-500">
+          Любишь читать? Попробуй мой книжный проект{" "}
+          <a
+            href="https://bookstrata.ru"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-400/70 transition hover:text-amber-400"
+          >
+            bookstrata.ru
+          </a>
+        </p>
+
         {/* Bottom */}
-        <div className="mt-8 border-t border-slate-800 pt-6 text-center">
+        <div className="border-t border-slate-800 pt-6 text-center">
           <p className="text-xs text-slate-600">
             Основано по книге «The Confident Mind» Нэйта Занссера
           </p>

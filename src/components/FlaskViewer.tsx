@@ -166,7 +166,7 @@ export default function FlaskViewer({
     <div className="flex flex-col items-center">
       <div className="w-full max-w-[320px]">
         {/* Колба */}
-        <div className="relative aspect-[220/280] overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-slate-700/40 via-slate-800/50 to-slate-950/80 shadow-2xl shadow-black/50 backdrop-blur-md">
+        <div className="relative aspect-[220/200] overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-slate-700/40 via-slate-800/50 to-slate-950/80 shadow-2xl shadow-black/50 backdrop-blur-md">
           {/* Стекло, шкала, пробка, блик */}
           <svg
             className="pointer-events-none absolute inset-0 h-full w-full"

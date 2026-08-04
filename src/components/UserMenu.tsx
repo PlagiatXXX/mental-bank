@@ -86,7 +86,7 @@ export default function UserMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-64 origin-top-right rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl shadow-black/20">
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 origin-top-right rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl shadow-black/20">
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
             Профиль
           </h3>

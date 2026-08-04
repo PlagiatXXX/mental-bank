@@ -7,7 +7,6 @@ import AuthGate from "@/components/AuthGate";
 import AppHeader from "@/components/AppHeader";
 import MainContent from "@/components/MainContent";
 import SidebarLayout from "@/components/SidebarLayout";
-import InfoModal from "@/components/InfoModal";
 import Onboarding from "@/components/Onboarding";
 import { RegisterSW } from "@/components/RegisterSW";
 import { LocalApiBootstrap } from "@/components/LocalApiBootstrap";
@@ -47,6 +46,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   other: {
     "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
     "theme-color": "#f59e0b",
   },
@@ -90,45 +90,6 @@ export default function RootLayout({
 
             <Footer />
           </SidebarLayout>
-
-          <InfoModal>
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-slate-100">
-                Добро пожаловать в Ментальный банк 🪙
-              </h2>
-
-              <p className="text-[15px] leading-relaxed text-slate-300">
-                Это приложение — ваш личный тренажёр уверенности. Всё, что вы
-                здесь делаете, основано на одной идее: уверенность строится не
-                на удаче, а на доказательствах. Каждая запись, каждая победа,
-                каждый разбор — это вклад на ваш внутренний счёт, с которого
-                никто и никогда не сможет сделать списание.
-              </p>
-
-              <p className="text-[15px] leading-relaxed text-slate-300">
-                Вас ждут шесть инструментов из книги Нэйта Занссера
-                «The Confident Mind»: дневник побед, аффирмации, визуализация,
-                разбор действий (AAR), защита уверенности и
-                когнитивно-поведенческие приёмы. Вы не просто читаете —
-                вы строите свою уверенность шаг за шагом.
-              </p>
-
-              <div className="rounded-xl border border-slate-700/60 bg-slate-800/60 px-5 py-4">
-                <p className="text-[15px] leading-relaxed text-slate-300">
-                  <strong className="text-amber-400">Важно:</strong> всё,
-                  что вы запишете, остаётся только в вашем браузере.
-                  Мы не собираем, не храним и не передаём ваши данные.
-                  Проект полностью анонимен, бесплатен и не требует
-                  регистрации по e-mail или телефону.
-                </p>
-              </div>
-
-              <p className="text-[15px] leading-relaxed text-slate-400">
-                Начните с дневника ESP — запишите свою первую победу.
-                Остальное придёт само.
-              </p>
-            </div>
-          </InfoModal>
 
           <Onboarding />
         </AuthGate>

@@ -11,6 +11,7 @@ export default function WelcomePage() {
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [step, setStep] = useState<"letter" | "register">("letter");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,87 +46,138 @@ export default function WelcomePage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="glass-card rounded-2xl p-8 text-center">
-          {/* Logo */}
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full coin-glow bg-linear-to-br from-amber-400 to-amber-600">
-              <span className="text-4xl">🪙</span>
+        {step === "letter" ? (
+          /* ── Приветственное письмо ── */
+          <div className="glass-card rounded-2xl p-8">
+            <div className="space-y-4 text-left">
+              <p className="text-[15px] leading-relaxed text-slate-300">
+                Это приложение — ваш личный тренажёр уверенности. Всё, что вы
+                здесь делаете, основано на одной идее:{" "}
+                <strong className="text-amber-400">
+                  уверенность строится не на удаче, а на доказательствах.
+                </strong>
+              </p>
+
+              <p className="text-[15px] leading-relaxed text-slate-300">
+                Каждая запись, каждая победа, каждый разбор — это вклад на ваш
+                внутренний счёт, с которого никто и никогда не сможет сделать
+                списание.
+              </p>
+
+              <div className="rounded-xl border border-slate-700/60 bg-slate-800/60 px-5 py-4">
+                <p className="text-[15px] leading-relaxed text-slate-300">
+                  <strong className="text-amber-400">Важно:</strong> всё, что
+                  вы запишете, остаётся только в вашем браузере. Мы не
+                  собираем, не храним и не передаём ваши данные. Проект
+                  полностью анонимен, бесплатен и не требует регистрации по
+                  e-mail или телефону.
+                </p>
+              </div>
+
+              <p className="text-[15px] leading-relaxed text-slate-300">
+                Вас ждут шесть инструментов из книги Нэйта Занссера
+                «The Confident Mind»: дневник побед, аффирмации, визуализация,
+                разбор действий (AAR), защита уверенности и
+                когнитивно-поведенческие приёмы.
+              </p>
+
+              <p className="text-[15px] leading-relaxed text-slate-400">
+                Начните с дневника ESP — запишите свою первую победу.
+                Остальное придёт само.
+              </p>
             </div>
+
+            <button
+              onClick={() => setStep("register")}
+              className="mt-6 w-full rounded-xl bg-linear-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500"
+            >
+              Далее
+            </button>
+
+            <p className="mt-3 text-center text-xs text-slate-600">
+              Основано на книге «The Confident Mind» Нэйта Занссера
+            </p>
           </div>
-
-          <h1 className="mb-2 text-2xl font-bold text-slate-100">
-            Ментальный банк
-          </h1>
-          <p className="mb-2 text-sm leading-relaxed text-slate-400">
-            Тренируйте уверенность по методу First Victory.
-            <br />
-            Фиксируйте достижения, стройте ритуалы, анализируйте прорывы.
-          </p>
-          <p className="mb-8 text-xs text-slate-500">
-            Только депозиты. Никаких списаний.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Avatar picker */}
-            <div>
-              <label className="mb-2 block text-xs font-medium text-slate-400">
-                Выберите аватар
-              </label>
-              <div className="flex flex-wrap justify-center gap-2">
-                {AVATARS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setAvatar(emoji)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition-all ${
-                      avatar === emoji
-                        ? "scale-110 bg-amber-500/20 ring-2 ring-amber-400"
-                        : "bg-slate-800 hover:bg-slate-700"
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+        ) : (
+          /* ── Регистрация ── */
+          <div className="glass-card rounded-2xl p-8 text-center">
+            {/* Logo */}
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full coin-glow bg-linear-to-br from-amber-400 to-amber-600">
+                <span className="text-4xl">🪙</span>
               </div>
             </div>
 
-            {/* Nickname */}
-            <div>
-              <label
-                htmlFor="nickname"
-                className="mb-1.5 block text-left text-xs font-medium text-slate-400"
-              >
-                Ваше имя
-              </label>
-              <input
-                id="nickname"
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="Например, Храбрый Воин"
-                maxLength={30}
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
-                autoFocus
-              />
-            </div>
+            <h1 className="mb-2 text-2xl font-bold text-slate-100">
+              Ментальный банк
+            </h1>
+            <p className="mb-8 text-sm text-slate-400">
+              Создайте профиль — и начните строить уверенность
+            </p>
 
-            {error && (
-              <p className="text-xs text-red-400">{error}</p>
-            )}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Avatar picker */}
+              <div>
+                <label className="mb-2 block text-xs font-medium text-slate-400">
+                  Выберите аватар
+                </label>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {AVATARS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setAvatar(emoji)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition-all ${
+                        avatar === emoji
+                          ? "scale-110 bg-amber-500/20 ring-2 ring-amber-400"
+                          : "bg-slate-800 hover:bg-slate-700"
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nickname */}
+              <div>
+                <label
+                  htmlFor="nickname"
+                  className="mb-1.5 block text-left text-xs font-medium text-slate-400"
+                >
+                  Ваше имя
+                </label>
+                <input
+                  id="nickname"
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="Например, Храбрый Воин"
+                  maxLength={30}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                  autoFocus
+                />
+              </div>
+
+              {error && <p className="text-xs text-red-400">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl bg-linear-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500 disabled:opacity-50"
+              >
+                {loading ? "Создаём профиль…" : "Начать"}
+              </button>
+            </form>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-linear-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-semibold text-slate-900 transition-all hover:from-amber-400 hover:to-amber-500 disabled:opacity-50"
+              onClick={() => setStep("letter")}
+              className="mt-4 text-xs text-slate-600 transition-colors hover:text-slate-400"
             >
-              {loading ? "Создаём профиль…" : "Начать"}
+              ← Назад
             </button>
-          </form>
-        </div>
-
-        <p className="mt-4 text-center text-xs text-slate-600">
-          Основано на книге «The Confident Mind» Нэйта Занссера
-        </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const STORAGE_KEY = "mb_onboarding_done";
-const MODAL_KEY = "mental-bank:info-modal-dismissed";
 
 interface Step {
   /** CSS-селектор элемента для подсветки */
@@ -161,7 +160,19 @@ const ALL_STEPS: Step[] = [
 export default function Onboarding() {
   const pathname = usePathname();
   const [showButton, setShowButton] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const driverRef = useRef<{ destroy: () => void } | null>(null);
+
+  // Проверяем авторизацию — кнопка только для зарегистрированных
+  useEffect(() => {
+    if (pathname === "/welcome" || pathname === "/welcome/") return;
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.user) setAuthorized(true);
+      })
+      .catch(() => {});
+  }, [pathname]);
 
   const startTour = useCallback(() => {
     // Сбрасываем флаг завершения — тур сейчас активен
@@ -212,12 +223,12 @@ export default function Onboarding() {
     d.drive(0);
   }, []);
 
-  // Автостарт: модалка закрыта + мы на главной + тур ещё не пройден
+  // Автостарт: мы на главной + тур ещё не пройден + авторизован
   useEffect(() => {
-    const modalDismissed = localStorage.getItem(MODAL_KEY) === "true";
+    if (!authorized) return;
     const tourDone = localStorage.getItem(STORAGE_KEY) === "true";
 
-    if (modalDismissed && !tourDone && pathname === "/") {
+    if (!tourDone && pathname === "/") {
       const timer = setTimeout(() => startTour(), 800);
       return () => clearTimeout(timer);
     }
@@ -227,7 +238,7 @@ export default function Onboarding() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowButton(true);
     }
-  }, [pathname, startTour]);
+  }, [pathname, startTour, authorized]);
 
   // При уходе со страницы (или размонтировании) завершаем тур и ставим флаг,
   // чтобы он не автостартовал при каждом заходе на главную.
@@ -237,7 +248,7 @@ export default function Onboarding() {
     };
   }, []);
 
-  if (!showButton) return null;
+  if (!showButton || !authorized) return null;
 
   return (
     <button

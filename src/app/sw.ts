@@ -17,7 +17,8 @@ const serwist = new Serwist({
   precacheOptions: {
     // Если страница не открывалась до того, как пропала сеть —
     // показываем офлайн-страницу вместо ошибки.
-    navigateFallback: "/offline",
+    // trailingSlash: true → URL страницы /offline/
+    navigateFallback: "/offline/",
   },
   skipWaiting: true,
   clientsClaim: true,

@@ -20,6 +20,8 @@ const PAGE_ROUTES = [
 ];
 
 const withSerwist = withSerwistInit({
+  // Отключаем Serwist в dev — Turbopack не поддерживается.
+  disable: process.env.NODE_ENV !== "production",
   // Файл service worker'а (TypeScript, собирается на этапе build)
   swSrc: "src/app/sw.ts",
   // Куда кладётся скомпилированный worker

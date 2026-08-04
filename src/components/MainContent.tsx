@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 export default function MainContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isWelcome = pathname === "/welcome";
+  const isWelcome = !pathname || pathname === "/welcome" || pathname === "/welcome/";
 
   return (
     <main className={isWelcome ? "" : "flex-1"} id="main-content">

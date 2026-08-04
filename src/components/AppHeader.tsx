@@ -29,7 +29,7 @@ export default function AppHeader() {
     refreshUser();
   }, [pathname, refreshUser]);
 
-  if (pathname === "/welcome") return null;
+  if (!pathname || pathname === "/welcome" || pathname === "/welcome/") return null;
 
   return (
     <div id="app-header" className="mb-6">
