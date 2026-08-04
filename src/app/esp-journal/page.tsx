@@ -6,8 +6,6 @@ import ESPCalendar from "@/components/ESPCalendar";
 import ESPHistory from "@/components/ESPHistory";
 import ChapterInfo from "@/components/ChapterInfo";
 
-export const dynamic = "force-dynamic";
-
 export default function ESPJournalPage() {
   const [tab, setTab] = useState<"diary" | "history">("diary");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

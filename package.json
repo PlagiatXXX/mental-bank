@@ -5,19 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
-    "start": "next start",
+    "start": "python3 -m http.server 3000 --directory out",
     "lint": "eslint"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "@prisma/adapter-libsql": "^7.9.0",
-    "@prisma/adapter-pg": "^7.9.0",
-    "@prisma/client": "^7.9.0",
     "driver.js": "^1.8.0",
     "framer-motion": "^12.43.0",
     "howler": "^2.2.4",
     "next": "16.2.11",
-    "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "serwist": "^9.5.12"
@@ -31,7 +26,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
-    "prisma": "^7.9.0",
+    "serve": "^14.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

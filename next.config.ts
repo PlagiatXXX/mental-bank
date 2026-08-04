@@ -1,6 +1,24 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
+const PAGE_ROUTES = [
+  "/",
+  "/aar",
+  "/account-2",
+  "/account-3",
+  "/cba",
+  "/deposits",
+  "/esp-journal",
+  "/mindset",
+  "/offline",
+  "/privacy",
+  "/protection",
+  "/rituals",
+  "/tools",
+  "/top-10",
+  "/welcome",
+];
+
 const withSerwist = withSerwistInit({
   // Файл service worker'а (TypeScript, собирается на этапе build)
   swSrc: "src/app/sw.ts",
@@ -8,12 +26,20 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   // Офлайн-страница для navigateFallback должна быть в precache,
   // иначе Serwist падает при инициализации worker'а.
-  additionalPrecacheEntries: [{ url: "/offline", revision: "1" }],
+  additionalPrecacheEntries: [
+    // При статическом экспорте HTML-страницы не попадают в precache
+    // автоматически (в отличие от серверной сборки) — добавляем вручную,
+    // чтобы посещённые/все страницы открывались офлайн.
+    ...PAGE_ROUTES.map((url) => ({ url, revision: "1.0.0" })),
+  ],
 });
 
 const nextConfig: NextConfig = {
   devIndicators: false,
   allowedDevOrigins: ["192.168.10.135"],
+  // Статический экспорт: приложение полностью живёт в браузере (localStorage),
+  // сервер не нужен — ни для API, ни для данных.
+  output: "export",
 };
 
 export default withSerwist(nextConfig);

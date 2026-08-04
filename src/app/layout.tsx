@@ -10,6 +10,7 @@ import SidebarLayout from "@/components/SidebarLayout";
 import InfoModal from "@/components/InfoModal";
 import Onboarding from "@/components/Onboarding";
 import { RegisterSW } from "@/components/RegisterSW";
+import { LocalApiBootstrap } from "@/components/LocalApiBootstrap";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -132,6 +133,7 @@ export default function RootLayout({
           <Onboarding />
         </AuthGate>
         <RegisterSW />
+        <LocalApiBootstrap />
       </body>
     </html>
   );
