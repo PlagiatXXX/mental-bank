@@ -6,6 +6,9 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   // Куда кладётся скомпилированный worker
   swDest: "public/sw.js",
+  // Офлайн-страница для navigateFallback должна быть в precache,
+  // иначе Serwist падает при инициализации worker'а.
+  additionalPrecacheEntries: [{ url: "/offline", revision: "1" }],
 });
 
 const nextConfig: NextConfig = {

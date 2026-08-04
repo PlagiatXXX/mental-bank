@@ -27,7 +27,7 @@ export default function Footer() {
   if (pathname === "/welcome") return null;
 
   return (
-    <footer className="border-t border-slate-800 bg-slate-900/50">
+    <footer className="border-t border-slate-800 bg-slate-900/50 pb-24 lg:pb-0">
       <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="grid gap-8 sm:grid-cols-3">
           {/* Brand */}
