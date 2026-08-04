@@ -115,14 +115,14 @@ export default function AffirmationsPage() {
     <div className="space-y-6">
       <ChapterInfo
         chapterNumber={3}
-        pageTitle="💬 Счёт №2 — Аффирмации"
+        pageTitle="💬 Счёт 2 — Аффирмации"
         contextNote="Аффирмации работают только если соблюдены 5 правил: первое лицо, настоящее время, позитив, точность, сила. Форма ниже проверяет каждое правило в реальном времени."
       />
 
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-slate-100">
-          <span aria-hidden="true">💬</span> Счёт №2 — Аффирмации
+          <span aria-hidden="true">💬</span> Счёт 2 — Аффирмации
         </h2>
         <p className="mt-1 text-xs text-slate-500">
           Глава 3. Конструктивные утверждения по 5 правилам. Повторение —

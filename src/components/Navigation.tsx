@@ -9,8 +9,8 @@ const navItems = [
   { id: "nav-balance", href: "/", label: "Баланс", icon: "🏦", mobileLabel: "Баланс" },
   { id: "nav-esp", href: "/esp-journal", label: "ESP-дневник", icon: "📝", mobileLabel: "ESP" },
   { id: "nav-top10", href: "/top-10", label: "Топ-10 побед", icon: "🏆", mobileLabel: "Топ-10" },
-  { id: "nav-affirmations", href: "/account-2", label: "Аффирмации", icon: "💬", mobileLabel: "Счёт №2" },
-  { id: "nav-visualization", href: "/account-3", label: "Визуализация", icon: "🎬", mobileLabel: "Счёт №3" },
+  { id: "nav-affirmations", href: "/account-2", label: "Аффирмации", icon: "💬", mobileLabel: "Счёт 2" },
+  { id: "nav-visualization", href: "/account-3", label: "Визуализация", icon: "🎬", mobileLabel: "Счёт 3" },
   { id: "nav-aar", href: "/aar", label: "AAR — разбор", icon: "🔄", mobileLabel: "AAR" },
 ];
 

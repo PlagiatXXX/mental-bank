@@ -103,15 +103,15 @@ export default function VisualizationsPage() {
     <div className="space-y-6">
       <ChapterInfo
         chapterNumber={4}
-        pageTitle="🎬 Счёт №3 — Визуализация"
-        contextNote="Мозг не всегда отличает ярко представленное от реального. Каждая детальная визуализация — реальный депозит уверенности в Счёт №3."
+        pageTitle="🎬 Счёт 3 — Визуализация"
+        contextNote="Мозг не всегда отличает ярко представленное от реального. Каждая детальная визуализация — реальный депозит уверенности в Счёт 3."
       />
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-100">
-            <span aria-hidden="true">🎬</span> Счёт №3 — Визуализация
+            <span aria-hidden="true">🎬</span> Счёт 3 — Визуализация
           </h2>
           <p className="mt-1 text-xs text-slate-500">
             Глава 4. Яркое, детальное воображение будущего успеха. Мозг не
@@ -135,7 +135,7 @@ export default function VisualizationsPage() {
           </p>
           <p className="text-xs text-slate-500">
             Создайте яркий, детальный сценарий вашего будущего успеха — это
-            пополнит Счёт №3
+            пополнит Счёт 3
           </p>
         </div>
       )}

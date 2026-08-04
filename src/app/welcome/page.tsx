@@ -44,8 +44,8 @@ export default function WelcomePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-3 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <div className="w-full">
         {step === "letter" ? (
           /* ── Приветственное письмо ── */
           <div className="glass-card rounded-2xl p-8">

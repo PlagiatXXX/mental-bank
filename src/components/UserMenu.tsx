@@ -46,7 +46,7 @@ export default function UserMenu({
       if (!res.ok) return;
       // Очищаем всё локальное и редиректим на приветствие
       localStorage.clear();
-      window.location.href = "/welcome";
+      window.location.replace("/welcome");
     } catch {
       // ignore
     } finally {

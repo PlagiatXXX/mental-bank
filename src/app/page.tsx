@@ -221,7 +221,7 @@ export default function Dashboard() {
         {([
           {
             key: "account1" as const,
-            label: "Счёт №1 — Прошлое",
+            label: "Счёт 1 — Прошлое",
             value: balance.account1,
             sub: `${balance.victories} побед • ${balance.espEntries} ESP • ${balance.deposits} депозитов`,
             color: "text-amber-400",
@@ -231,7 +231,7 @@ export default function Dashboard() {
           },
           {
             key: "account2" as const,
-            label: "Счёт №2 — Настоящее",
+            label: "Счёт 2 — Настоящее",
             value: balance.affirmations,
             sub: `${balance.affirmations} аффирмаций`,
             color: "text-emerald-400",
@@ -241,7 +241,7 @@ export default function Dashboard() {
           },
           {
             key: "account3" as const,
-            label: "Счёт №3 — Будущее",
+            label: "Счёт 3 — Будущее",
             value: balance.visualizations,
             sub: `${balance.visualizations} сценариев`,
             color: "text-sky-400",

@@ -253,7 +253,7 @@ export default function Onboarding() {
   return (
     <button
       onClick={startTour}
-      className="fixed bottom-24 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-sm text-amber-400 shadow-lg backdrop-blur-sm transition-colors hover:bg-amber-500/30 lg:bottom-6"
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 text-sm text-amber-400 shadow-lg backdrop-blur-sm transition-colors hover:bg-amber-500/30 lg:bottom-6"
       title="Обучение"
       aria-label="Запустить обучение"
     >

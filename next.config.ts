@@ -37,6 +37,7 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   devIndicators: false,
   allowedDevOrigins: ["192.168.10.135"],
   // Статический экспорт: приложение полностью живёт в браузере (localStorage),
