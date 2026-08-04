@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -9,6 +9,7 @@ import MainContent from "@/components/MainContent";
 import SidebarLayout from "@/components/SidebarLayout";
 import InfoModal from "@/components/InfoModal";
 import Onboarding from "@/components/Onboarding";
+import { RegisterSW } from "@/components/RegisterSW";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,13 @@ export const metadata: Metadata = {
     ],
     apple: "/logo/apple-touch-icon.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f59e0b",
 };
 
 export default function RootLayout({
@@ -123,6 +131,7 @@ export default function RootLayout({
 
           <Onboarding />
         </AuthGate>
+        <RegisterSW />
       </body>
     </html>
   );

@@ -103,6 +103,14 @@ export default function Footer() {
           <p className="mt-1 text-xs text-slate-700">
             © {new Date().getFullYear()} Ментальный банк
           </p>
+          <p className="mt-1 text-xs">
+            <Link
+              href="/privacy"
+              className="text-slate-600 transition hover:text-slate-400"
+            >
+              Политика конфиденциальности
+            </Link>
+          </p>
         </div>
       </div>
     </footer>
